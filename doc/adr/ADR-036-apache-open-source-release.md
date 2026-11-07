@@ -29,6 +29,7 @@ ADR-014 kept the differentiating engines in a private Full edition and published
 - All source code, tests, the API contract, configuration schema and the design documents cleared for publication are released under the **Apache License 2.0** (SPDX `Apache-2.0`) in a public repository.
 - The public repository is produced by the export tool from this repository. Only documents whose front matter says `edition: community` are published; `edition: full` now means **internal** (business model, delivery plan and budget, review records, hosted-demo operations).
 - `community` and `full` remain as configuration profiles that select adapters (ADR-007). They no longer mark a licensing boundary.
+- Amended 2026-11-07: the public export builds with the `full` profile (`tools/export/manifest.json` `buildEdition`), so the published app shows every engine the README describes. The `community` profile still exists for deployments that want the smaller adapter set.
 - Inbound contributions are accepted under the same licence with a Developer Certificate of Origin sign-off (IP-4). `licensing/CLA.md` is retired from the public export.
 - This private repository keeps its all-rights-reserved root `LICENSE` until the owner decides to publish it directly; the public export carries `LICENSE` (Apache-2.0) and `NOTICE`.
 
