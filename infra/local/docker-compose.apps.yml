@@ -1,0 +1,87 @@
+# AuraPrime FactoryPulse v2 - Containerized Services Compose (DU-02..DU-12)
+# Extends infra/local/docker-compose.yml for complete microservices execution.
+name: factorypulse-services
+services:
+  ingest-gateway:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: ingest-gateway
+        EDITION: ${FP_EDITION:-community}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      FP_EDITION: ${FP_EDITION:-community}
+    depends_on:
+      - kafka
+      - mosquitto
+    network_mode: "host"
+
+  stream-processor:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: stream-processor
+        EDITION: ${FP_EDITION:-community}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      FP_EDITION: ${FP_EDITION:-community}
+    depends_on:
+      - kafka
+      - postgres
+    network_mode: "host"
+
+  agent-orchestrator:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: agent-orchestrator
+        EDITION: ${FP_EDITION:-community}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      FP_EDITION: ${FP_EDITION:-community}
+    depends_on:
+      - kafka
+      - postgres
+    network_mode: "host"
+
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: api-gateway
+        EDITION: ${FP_EDITION:-community}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      FP_EDITION: ${FP_EDITION:-community}
+      PORT: ${FP_API_PORT:-8080}
+    ports:
+      - "${FP_API_PORT:-8080}:${FP_API_PORT:-8080}"
+    depends_on:
+      - postgres
+
+  # Mock API isolated to development profile per ADR-030
+  mock-api:
+    profiles: ["mock"]
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: mock-api
+        EDITION: ${FP_EDITION:-community}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      FP_EDITION: ${FP_EDITION:-community}
+      PORT: ${FP_MOCK_API_PORT:-4000}
+    ports:
+      - "${FP_MOCK_API_PORT:-4000}:${FP_MOCK_API_PORT:-4000}"
+    depends_on:
+      - postgres

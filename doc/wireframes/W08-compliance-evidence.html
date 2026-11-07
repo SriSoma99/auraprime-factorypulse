@@ -1,0 +1,453 @@
+<!--
+title: "Wireframe W08: Compliance evidence"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../04-architecture-definition.md
+  - ../adr/ADR-015-hash-chained-audit.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W08 Compliance Evidence &amp; Governance</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Source: 02 section 6.1 (W08 row); REG-1 to REG-8; POL-3; ADR-015 (hash chain). Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+/* test switcher */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+
+/* header & kpi row */
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head h2{font-size:1.25rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;padding:14px;border-bottom:1px solid var(--line)}
+.kpi-card{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--fill)}
+.kpi-card .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi-card .val{font-size:1.35rem;font-weight:700;font-family:var(--mono)}
+.kpi-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.kpi-card.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.kpi-card.warn{border-color:var(--warn-s);background:var(--warn-f)}
+.kpi-card.bad{border-color:var(--bad-s);background:var(--bad-f)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:nth-child(odd){border-right:1px solid var(--line)}
+.panel h3{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:6px 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.ok{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.warn{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+.status-badge.bad{background:var(--bad-f);color:var(--bad-s);border:1px solid var(--bad-s)}
+
+.btn{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12px;border-width:1px}
+
+/* progress bar */
+.bar{height:12px;background:var(--fill);border:1px solid var(--line);border-radius:4px;overflow:hidden;position:relative;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--accent)}
+
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:44px}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+
+@media (max-width:820px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:nth-child(odd){border-right:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W08 Compliance Evidence &amp; Governance Pack</h1>
+    <p class="lede">
+      Audit-ready regulatory documentation: cryptographic hash-chain verification (ADR-015), Software Bill of Materials (SBOM),
+      model provenance register, and single-click evidence pack generation for EU AI Act / Machinery Regulation auditors.
+    </p>
+  </div>
+
+  <!-- State Switcher -->
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="verified" aria-pressed="true">verified_ok</button>
+      <button type="button" data-state="generating" aria-pressed="false">generating_pack</button>
+      <button type="button" data-state="tampered" aria-pressed="false">tamper_detected</button>
+      <button type="button" data-state="loading" aria-pressed="false">loading</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useComplianceEvidenceViewModel()</code></span>
+  </aside>
+
+  <!-- Screen Frame -->
+  <main class="screen" id="screen" role="region" aria-label="Compliance Evidence Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC DATA</span>
+      <span class="chip" style="font-weight:600">FULL GOVERNANCE SUITE</span>
+      <span class="kv">Tenant: <b>Demo Plant Org</b></span>
+      <span class="kv">Target Framework: <b>EU AI Act Art 50 / Machinery Reg</b></span>
+      <span class="sp"></span>
+      <button class="btn sm primary" id="btn-export" onclick="startExport()">Generate Evidence Pack (.zip)</button>
+    </header>
+
+    <!-- Generating Pack Progress Banner -->
+    <div id="banner-gen" style="padding:14px;background:var(--warn-f);border-bottom:1px solid var(--warn-s)" hidden>
+      <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600">
+        <span>Assembling Evidence Pack: Bundle #EP-2026-10-05...</span>
+        <span class="mono">68%</span>
+      </div>
+      <div class="bar"><i style="width:68%"></i></div>
+      <span class="kv">Archiving telemetry traces, prompt logs, citations, and cryptographic signatures.</span>
+    </div>
+
+    <!-- Tamper Warning Banner -->
+    <div id="banner-tamper" style="padding:14px;background:var(--bad-f);border-bottom:1px solid var(--bad-s)" hidden>
+      <span class="status-badge bad" style="margin-right:8px">CRITICAL INTEGRITY FAILURE</span>
+      <b>Hash Chain Tampering Detected at Block #14,204:</b> Event hash signature mismatch in audit store. Hash chain verification stopped. Alert logged to security admin.
+    </div>
+
+    <!-- Loading Skeleton View -->
+    <div id="view-loading" style="padding:14px" hidden>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="view-main">
+      
+      <!-- KPI Row -->
+      <section class="kpi-row" aria-label="Integrity Indicators">
+        <div class="kpi-card ok" id="kpi-chain">
+          <div class="lbl">Audit Hash Chain (POL-3)</div>
+          <div class="val" id="val-chain">14,820 / 14,820</div>
+          <div class="sub" id="sub-chain">0 discrepancies from Genesis</div>
+        </div>
+
+        <div class="kpi-card ok" id="kpi-sbom">
+          <div class="lbl">SBOM Vulnerability Gate</div>
+          <div class="val">0 Critical / 0 High</div>
+          <div class="sub">CycloneDX 1.5 &bull; 118 dependencies</div>
+        </div>
+
+        <div class="kpi-card ok">
+          <div class="lbl">Model Provenance &amp; Reg</div>
+          <div class="val">4 Pinned Models</div>
+          <div class="sub">100% prompt hashes registered</div>
+        </div>
+
+        <div class="kpi-card ok">
+          <div class="lbl">Human Approvals (Inv 2)</div>
+          <div class="val">100% Signed</div>
+          <div class="sub">0 autonomous machine actuations</div>
+        </div>
+      </section>
+
+      <!-- Main Panels -->
+      <div class="grid">
+        
+        <!-- Panel 1: Cryptographic Hash Chain Audit Trail -->
+        <article class="panel">
+          <h3>
+            <span>Audit Hash-Chain Verification (ADR-015)</span>
+            <button class="btn sm" onclick="reverify()">Re-Verify Chain</button>
+          </h3>
+          <p class="kv" style="margin:0 0 10px">
+            Every recommendation, human approval, policy evaluation, and retrieval citation is recorded by <code>APP-20</code> with SHA-256 forward-chaining.
+          </p>
+          <table class="tbl" aria-label="Audit chain sample table">
+            <thead>
+              <tr><th>Seq #</th><th>Event Type</th><th>Actor / Role</th><th>Record Hash</th><th>Chain Status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">#14,820</td>
+                <td>Lesson Approved (LRN-6)</td>
+                <td>Sri Soma (ACT-4)</td>
+                <td class="mono">e3b0c442...890a</td>
+                <td><span class="status-badge ok">VALID</span></td>
+              </tr>
+              <tr>
+                <td class="mono">#14,819</td>
+                <td>Inspection Approved (Tier 1)</td>
+                <td>Shift Lead (ACT-3)</td>
+                <td class="mono">4f92a11b...513c</td>
+                <td><span class="status-badge ok">VALID</span></td>
+              </tr>
+              <tr>
+                <td class="mono">#14,818</td>
+                <td>Diagnostic Abstention (UI-8)</td>
+                <td>APP-09 Agent</td>
+                <td class="mono">9a82cd14...44fe</td>
+                <td><span class="status-badge ok">VALID</span></td>
+              </tr>
+              <tr>
+                <td class="mono">#14,817</td>
+                <td>Telemetry Anomaly Alert</td>
+                <td>APP-04 Detector</td>
+                <td class="mono">118fb204...9981</td>
+                <td><span class="status-badge ok">VALID</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Panel 2: Model & Prompt Provenance Register -->
+        <article class="panel">
+          <h3>
+            <span>Model Provenance Register (REG-5)</span>
+            <span class="kv">EU AI Act Art 50</span>
+          </h3>
+          <table class="tbl" aria-label="Model register table">
+            <thead>
+              <tr><th>Model Function</th><th>Pinned Model ID</th><th>Licence</th><th>System Prompt Hash</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Diagnostic Narration</b></td>
+                <td class="mono">gemini-3.8-flash</td>
+                <td>Proprietary (API)</td>
+                <td class="mono">sha256:d814fe...</td>
+              </tr>
+              <tr>
+                <td><b>Offline Fallback Model</b></td>
+                <td class="mono">qwen-2.5-coder-7b</td>
+                <td>Apache-2.0</td>
+                <td class="mono">sha256:94ae12...</td>
+              </tr>
+              <tr>
+                <td><b>Corpus Embedding</b></td>
+                <td class="mono">text-embedding-004</td>
+                <td>Proprietary (API)</td>
+                <td class="mono">sha256:c091bb...</td>
+              </tr>
+              <tr>
+                <td><b>Causal Graph Prior</b></td>
+                <td class="mono">causal-fmea-v2.1</td>
+                <td>Apache-2.0</td>
+                <td class="mono">sha256:44812a...</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="kv" style="margin-top:10px">
+            <b>Advisory Invariant 1:</b> No registered model or prompt has access to actuator endpoints or PLC controllers.
+          </p>
+        </article>
+
+        <!-- Panel 3: Software Bill of Materials (SBOM) -->
+        <article class="panel">
+          <h3>
+            <span>Software Bill of Materials (REG-4)</span>
+            <a href="#" class="cite-link">Download CycloneDX (JSON) &gt;</a>
+          </h3>
+          <table class="tbl" aria-label="SBOM summary table">
+            <thead>
+              <tr><th>Component / Ecosystem</th><th>Declared Version</th><th>Vulnerabilities</th><th>Licence Compliance</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Fastify Core (APP-17)</b><br><span class="kv">Node.js package</span></td>
+                <td class="mono">v4.28.1</td>
+                <td><span class="status-badge ok">0 CVEs</span></td>
+                <td>MIT (Permissive)</td>
+              </tr>
+              <tr>
+                <td><b>PostgreSQL + pgvector (APP-21)</b><br><span class="kv">Container Image</span></td>
+                <td class="mono">pg16-pgvector-0.7.0</td>
+                <td><span class="status-badge ok">0 CVEs</span></td>
+                <td>PostgreSQL Licence</td>
+              </tr>
+              <tr>
+                <td><b>Eclipse Mosquitto (APP-01)</b><br><span class="kv">Edge Broker</span></td>
+                <td class="mono">v2.0.18 (Alpine)</td>
+                <td><span class="status-badge ok">0 CVEs</span></td>
+                <td>EPL 2.0 / EDL 1.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <!-- Panel 4: Assembled Evidence Bundles -->
+        <article class="panel">
+          <h3>
+            <span>Assembled Evidence Packs</span>
+            <span class="kv">Audit Archives</span>
+          </h3>
+          <table class="tbl" aria-label="Generated packs table">
+            <thead>
+              <tr><th>Bundle ID</th><th>Target Incident / Scope</th><th>Created</th><th>Size</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">EP-2026-10-04</td>
+                <td>Incident #INC-2026-0042 (Weld Cell 4)</td>
+                <td>2026-10-04 18:22</td>
+                <td class="mono">4.2 MB</td>
+                <td><button class="btn sm">Download .zip</button></td>
+              </tr>
+              <tr>
+                <td class="mono">EP-2026-09-30</td>
+                <td>Monthly Governance &amp; SBOM Audit</td>
+                <td>2026-09-30 23:59</td>
+                <td class="mono">12.8 MB</td>
+                <td><button class="btn sm">Download .zip</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+      </div> <!-- end grid -->
+
+    </div> <!-- end view-main -->
+
+    <!-- Footer -->
+    <footer class="footerbar">
+      <span>EU AI Act High-Risk Exemption: Advisory-Only Architecture Confirmed (P-1, ADR-001)</span>
+      <span><a href="#">Export Hash Anchor to Public Ledger</a> &bull; <a href="#">Runbook RB-09: Tamper Recovery</a></span>
+    </footer>
+
+  </main>
+
+  <ul class="notes">
+    <li><b>REG-7:</b> Automated evidence pack generation compiles audit trail, prompts, citations, and operator approvals into a signed archive.</li>
+    <li><b>POL-3 &amp; ADR-015:</b> Cryptographic SHA-256 hash chaining ensures complete tamper detection across all decision records.</li>
+    <li><b>REG-4 &amp; REG-5:</b> Full CycloneDX SBOM and model provenance registry ready for regulatory conformity assessments.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const viewMain = document.getElementById('view-main');
+  const viewLoading = document.getElementById('view-loading');
+  const bannerGen = document.getElementById('banner-gen');
+  const bannerTamper = document.getElementById('banner-tamper');
+  const kpiChain = document.getElementById('kpi-chain');
+  const valChain = document.getElementById('val-chain');
+  const subChain = document.getElementById('sub-chain');
+
+  let state = 'verified';
+
+  function render(){
+    viewMain.hidden = false;
+    viewLoading.hidden = true;
+    bannerGen.hidden = true;
+    bannerTamper.hidden = true;
+
+    kpiChain.className = 'kpi-card ok';
+    valChain.innerText = '14,820 / 14,820';
+    subChain.innerText = '0 discrepancies from Genesis';
+
+    if (state === 'loading') {
+      viewMain.hidden = true;
+      viewLoading.hidden = false;
+      return;
+    }
+
+    if (state === 'generating') {
+      bannerGen.hidden = false;
+    }
+
+    if (state === 'tampered') {
+      bannerTamper.hidden = false;
+      kpiChain.className = 'kpi-card bad';
+      valChain.innerText = 'BROKEN at #14,204';
+      subChain.innerHTML = '<span style="color:var(--bad-s);font-weight:700">HASH MISMATCH DETECTED</span>';
+    }
+  }
+
+  window.startExport = function(){
+    state = 'generating';
+    document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.controls button[data-state="generating"]').setAttribute('aria-pressed', 'true');
+    render();
+  };
+
+  window.reverify = function(){
+    alert('Cryptographic hash chain verified from block #1 to #14,820! All signatures valid.');
+  };
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state = btn.dataset.state;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

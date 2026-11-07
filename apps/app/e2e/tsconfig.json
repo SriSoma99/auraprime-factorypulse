@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": [
+      "node"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "./**/*.ts",
+    "../playwright.config.ts"
+  ]
+}

@@ -1,0 +1,494 @@
+<!--
+title: "Wireframe W11: API and MCP console"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../04-architecture-definition.md
+  - ../adr/ADR-008-mcp-security.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W11 API &amp; MCP Console</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Source: 02 section 6.1 (W11 row); API-1 to API-5; MCP-1 to MCP-9; ADR-008. Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+/* test switcher */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+
+/* tabs */
+.tabnav{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--fill)}
+.tabnav button{border:0;border-right:1px solid var(--line);background:transparent;padding:10px 18px;font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+.tabnav button.active{background:var(--paper);color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent);margin-bottom:-1px}
+.tabnav button .badge{font-size:11px;font-family:var(--mono);padding:1px 6px;border-radius:999px;background:var(--line);margin-left:6px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--fill)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:var(--fill)}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.ok{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.warn{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+.status-badge.bad{background:var(--bad-f);color:var(--bad-s);border:1px solid var(--bad-s)}
+
+.btn{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.danger{border-color:var(--bad-s);color:var(--bad-s);background:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12px;border-width:1px}
+
+/* callout modal banner */
+.modal-banner{border-left:5px solid var(--accent);background:var(--fill);padding:14px;margin:14px;border-radius:0 8px 8px 0}
+.bar{height:8px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.warn i{background:var(--warn-s)}
+.bar.bad i{background:var(--bad-s)}
+
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:36px}
+.callout{padding:24px;text-align:center;color:var(--muted)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W11 API &amp; MCP Tool Console</h1>
+    <p class="lede">
+      Integration boundary governance: API key lifecycle and quota enforcement (API-3), Model Context Protocol ToolGrant permissions matrix (MCP-4),
+      and emergency kill switches (MCP-5) that enforce Advisory Invariant 1 (no actuation).
+    </p>
+  </div>
+
+  <!-- State Switcher -->
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>Tab (<code>vm.tab</code>):</legend>
+      <button type="button" data-tab="keys" aria-pressed="true">api_keys</button>
+      <button type="button" data-tab="tools" aria-pressed="false">mcp_tool_grants</button>
+      <button type="button" data-tab="webhooks" aria-pressed="false">webhooks</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="normal" aria-pressed="true">normal</button>
+      <button type="button" data-state="key_created" aria-pressed="false">new_key_created</button>
+      <button type="button" data-state="over_quota" aria-pressed="false">over_quota_warning</button>
+      <button type="button" data-state="loading" aria-pressed="false">loading</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useApiMcpViewModel()</code></span>
+  </aside>
+
+  <!-- Screen Frame -->
+  <main class="screen" id="screen" role="region" aria-label="API and MCP Console Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC DATA</span>
+      <span class="kv">Tenant: <b>Demo Plant Org</b></span>
+      <span class="kv">OAuth: <b>OAuth 2.1 Mutual-TLS</b></span>
+      <span class="sp"></span>
+      <button class="btn sm primary" onclick="showNewKey()">+ Generate API Key</button>
+    </header>
+
+    <!-- One-Time Key Display Banner -->
+    <div id="banner-newkey" class="modal-banner" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <b>New API Key Generated: Copy Now (Will Not Be Shown Again)</b>
+        <button class="btn sm" onclick="hideNewKey()">Close</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" readonly value="fp_live_9a8f27b9c04e421da988102377c8e9b0" class="mono" style="flex:1;padding:6px 10px;font-size:13px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink)">
+        <button class="btn sm primary" onclick="alert('Key copied to clipboard!')">Copy</button>
+      </div>
+      <span class="kv" style="margin-top:6px;display:block">Scope: <code>read:alerts, read:sensors, draft:workorders</code> &bull; Rate Limit: 60 req/min</span>
+    </div>
+
+    <!-- Over Quota Banner -->
+    <div id="banner-quota" style="padding:14px;background:var(--warn-f);border-bottom:1px solid var(--warn-s)" hidden>
+      <span class="status-badge warn" style="margin-right:8px">RATE LIMIT EXCEEDED</span>
+      <b>Key 'Integration-LineA' has reached 92% of monthly request quota.</b> Automatic 429 throttling will engage at 10,000 requests.
+    </div>
+
+    <!-- Tab Nav -->
+    <nav class="tabnav" aria-label="Console tabs">
+      <button type="button" class="active" id="btn-tab-keys">API Keys &amp; Tokens <span class="badge">4</span></button>
+      <button type="button" id="btn-tab-tools">MCP Tool Grants &amp; Kill Switches <span class="badge">6</span></button>
+      <button type="button" id="btn-tab-webhooks">Webhooks &amp; Events <span class="badge">2</span></button>
+    </nav>
+
+    <!-- Loading Skeleton View -->
+    <div id="view-loading" style="padding:14px" hidden>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+    </div>
+
+    <!-- Tab Content 1: API Keys (API-3) -->
+    <div id="content-keys">
+      <table class="tbl" aria-label="API keys table">
+        <thead>
+          <tr>
+            <th>Key Name &amp; Prefix</th>
+            <th>Authorized Scopes</th>
+            <th>Rate Limit</th>
+            <th>Monthly Quota Usage</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <b>Plant Mes Ingest Connector</b><br>
+              <span class="mono kv">fp_live_83b2...a109</span>
+            </td>
+            <td><span class="chip">read:alerts</span> <span class="chip">ingest:telemetry</span></td>
+            <td class="mono">1,000 / min</td>
+            <td>
+              <div style="font-size:12px;display:flex;justify-content:space-between">
+                <span class="mono">42,180 / 100,000</span><span>42.1%</span>
+              </div>
+              <div class="bar"><i style="width:42.1%"></i></div>
+            </td>
+            <td class="mono kv">2026-09-12</td>
+            <td><button class="btn sm danger" onclick="alert('Key revoked!')">Revoke</button></td>
+          </tr>
+          <tr id="row-linea-key">
+            <td>
+              <b>Integration-LineA Mobile App</b><br>
+              <span class="mono kv">fp_live_94df...cc32</span>
+            </td>
+            <td><span class="chip">read:alerts</span> <span class="chip">draft:workorders</span></td>
+            <td class="mono">120 / min</td>
+            <td>
+              <div style="font-size:12px;display:flex;justify-content:space-between">
+                <span class="mono" id="quota-val">2,400 / 10,000</span><span id="quota-pct">24%</span>
+              </div>
+              <div class="bar" id="quota-bar"><i style="width:24%"></i></div>
+            </td>
+            <td class="mono kv">2026-09-24</td>
+            <td><button class="btn sm danger">Revoke</button></td>
+          </tr>
+          <tr>
+            <td>
+              <b>Grafana Observability Exporter</b><br>
+              <span class="mono kv">fp_live_12ea...bb01</span>
+            </td>
+            <td><span class="chip">read:telemetry</span></td>
+            <td class="mono">300 / min</td>
+            <td>
+              <div style="font-size:12px;display:flex;justify-content:space-between">
+                <span class="mono">8,920 / 50,000</span><span>17.8%</span>
+              </div>
+              <div class="bar"><i style="width:17.8%"></i></div>
+            </td>
+            <td class="mono kv">2026-10-01</td>
+            <td><button class="btn sm danger">Revoke</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab Content 2: MCP Tool Grants & Kill Switches (MCP-4, MCP-5) -->
+    <div id="content-tools" hidden>
+      <div style="padding:12px 14px;background:var(--fill);border-bottom:1px solid var(--line);font-size:13px" class="kv">
+        <b>Advisory Invariant 1 (Strict):</b> Tool permissions default to DENY. Any tool capable of equipment control is hard-blocked at the schema level.
+      </div>
+      <table class="tbl" aria-label="MCP tool grants matrix">
+        <thead>
+          <tr>
+            <th>Tool Identifier</th>
+            <th>Type</th>
+            <th>Target Tool Server</th>
+            <th>Tool Grant Status</th>
+            <th>Audit Log Mode</th>
+            <th>Emergency Kill Switch</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <b>read_sensor_trust_score</b><br>
+              <span class="kv">Queries real-time telemetry validation matrix</span>
+            </td>
+            <td><span class="chip">Read-Only</span></td>
+            <td class="mono">mcp-sensors:8081</td>
+            <td><span class="status-badge ok">ALLOWED (ALL ROLES)</span></td>
+            <td class="mono">Sampled 10%</td>
+            <td><button class="btn sm" onclick="toggleKill(this)">Disable Tool</button></td>
+          </tr>
+          <tr>
+            <td>
+              <b>retrieve_equipment_manual_chunk</b><br>
+              <span class="kv">Retrieves cited sections from verified OEM manuals</span>
+            </td>
+            <td><span class="chip">Read-Only</span></td>
+            <td class="mono">mcp-rag:8082</td>
+            <td><span class="status-badge ok">ALLOWED (ALL ROLES)</span></td>
+            <td class="mono">100% Hash Chained</td>
+            <td><button class="btn sm" onclick="toggleKill(this)">Disable Tool</button></td>
+          </tr>
+          <tr>
+            <td>
+              <b>draft_work_order</b><br>
+              <span class="kv">Generates unapproved inspection draft work order</span>
+            </td>
+            <td><span class="chip">Draft-Only</span></td>
+            <td class="mono">mcp-cmms:8083</td>
+            <td><span class="status-badge ok">TIER 1 APPROVAL ONLY</span></td>
+            <td class="mono">100% Hash Chained</td>
+            <td><button class="btn sm" onclick="toggleKill(this)">Disable Tool</button></td>
+          </tr>
+          <tr>
+            <td>
+              <b>set_plc_override_speed</b><br>
+              <span class="kv">Direct control write to PLC motor register</span>
+            </td>
+            <td><span class="chip" style="background:var(--bad-f);color:var(--bad-s)">Actuation Attempt</span></td>
+            <td class="mono">untrusted-client</td>
+            <td><span class="status-badge bad">FORBIDDEN (INVARIANT 1)</span></td>
+            <td class="mono">Security Alert Logged</td>
+            <td><button class="btn sm danger" disabled>Hard-Killed</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab Content 3: Webhooks & Outbox -->
+    <div id="content-webhooks" hidden>
+      <table class="tbl" aria-label="Webhooks table">
+        <thead>
+          <tr>
+            <th>Endpoint URL</th>
+            <th>Subscribed Event Topics</th>
+            <th>Status</th>
+            <th>Last Delivery</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b class="mono">https://mes.plant-a.example/events</b></td>
+            <td><span class="chip">alert.verified</span> <span class="chip">approval.granted</span></td>
+            <td><span class="status-badge ok">DELIVERING (200 OK)</span></td>
+            <td class="mono kv">12s ago</td>
+            <td><button class="btn sm">Test Ping</button></td>
+          </tr>
+          <tr>
+            <td><b class="mono">https://slack.com/api/webhook/fp-alerts</b></td>
+            <td><span class="chip">alert.high_impact</span></td>
+            <td><span class="status-badge ok">DELIVERING (200 OK)</span></td>
+            <td class="mono kv">4m ago</td>
+            <td><button class="btn sm">Test Ping</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footerbar">
+      <span>Gateway: <code>Fastify OpenAPI 3.1 Proxy</code> &bull; OAuth 2.1 Audience RFC 9068</span>
+      <span><a href="#">View API Documentation (OpenAPI)</a> &bull; <a href="#">Runbook RB-08: DLQ &amp; Rate Limits</a></span>
+    </footer>
+
+  </main>
+
+  <ul class="notes">
+    <li><b>API-3:</b> Secret tokens displayed once; rate limit and quota meters visible in real time.</li>
+    <li><b>MCP-4:</b> ToolGrant RBAC matrix enforces strict least-privilege scoping per role agent.</li>
+    <li><b>MCP-5 &amp; Invariant 1:</b> Emergency kill switches allow instant disabling of any tool; physical equipment actuation is permanently hard-blocked.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const tabKeys = document.getElementById('btn-tab-keys');
+  const tabTools = document.getElementById('btn-tab-tools');
+  const tabWebhooks = document.getElementById('btn-tab-webhooks');
+
+  const contentKeys = document.getElementById('content-keys');
+  const contentTools = document.getElementById('content-tools');
+  const contentWebhooks = document.getElementById('content-webhooks');
+
+  const bannerNewkey = document.getElementById('banner-newkey');
+  const bannerQuota = document.getElementById('banner-quota');
+  const viewLoading = document.getElementById('view-loading');
+
+  const quotaVal = document.getElementById('quota-val');
+  const quotaPct = document.getElementById('quota-pct');
+  const quotaBar = document.getElementById('quota-bar');
+
+  let currentTab = 'keys';
+  let state = 'normal';
+
+  function render(){
+    contentKeys.hidden = true;
+    contentTools.hidden = true;
+    contentWebhooks.hidden = true;
+    viewLoading.hidden = true;
+    bannerNewkey.hidden = true;
+    bannerQuota.hidden = true;
+
+    [tabKeys, tabTools, tabWebhooks].forEach(b => b.className = '');
+
+    if (state === 'loading') {
+      viewLoading.hidden = false;
+      return;
+    }
+
+    if (state === 'key_created') {
+      bannerNewkey.hidden = false;
+    }
+
+    if (state === 'over_quota') {
+      bannerQuota.hidden = false;
+      quotaVal.innerText = '9,200 / 10,000';
+      quotaPct.innerText = '92%';
+      quotaBar.className = 'bar warn';
+      quotaBar.querySelector('i').style.width = '92%';
+    } else {
+      quotaVal.innerText = '2,400 / 10,000';
+      quotaPct.innerText = '24%';
+      quotaBar.className = 'bar';
+      quotaBar.querySelector('i').style.width = '24%';
+    }
+
+    if (currentTab === 'keys') {
+      contentKeys.hidden = false;
+      tabKeys.className = 'active';
+    } else if (currentTab === 'tools') {
+      contentTools.hidden = false;
+      tabTools.className = 'active';
+    } else if (currentTab === 'webhooks') {
+      contentWebhooks.hidden = false;
+      tabWebhooks.className = 'active';
+    }
+  }
+
+  window.showNewKey = function(){
+    state = 'key_created';
+    document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.controls button[data-state="key_created"]').setAttribute('aria-pressed', 'true');
+    render();
+  };
+
+  window.hideNewKey = function(){
+    state = 'normal';
+    document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.controls button[data-state="normal"]').setAttribute('aria-pressed', 'true');
+    render();
+  };
+
+  window.toggleKill = function(btn){
+    if (btn.innerText === 'Disable Tool') {
+      btn.innerText = 'Re-Enable';
+      btn.className = 'btn sm danger';
+      btn.closest('tr').querySelector('.status-badge').className = 'status-badge bad';
+      btn.closest('tr').querySelector('.status-badge').innerText = 'KILL-SWITCHED';
+    } else {
+      btn.innerText = 'Disable Tool';
+      btn.className = 'btn sm';
+      btn.closest('tr').querySelector('.status-badge').className = 'status-badge ok';
+      btn.closest('tr').querySelector('.status-badge').innerText = 'ALLOWED';
+    }
+  };
+
+  document.querySelectorAll('.controls button[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      currentTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state = btn.dataset.state;
+      render();
+    });
+  });
+
+  [tabKeys, tabTools, tabWebhooks].forEach(t => {
+    t.addEventListener('click', () => {
+      if (t === tabKeys) currentTab = 'keys';
+      if (t === tabTools) currentTab = 'tools';
+      if (t === tabWebhooks) currentTab = 'webhooks';
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => {
+        b.setAttribute('aria-pressed', b.dataset.tab === currentTab ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "@fp/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "migrate": "tsx src/cli.ts migrate",
+    "seed": "tsx src/cli.ts seed",
+    "reset": "tsx src/cli.ts reset",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fp/config": "workspace:*",
+    "@fp/synthetic-data": "workspace:*",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}

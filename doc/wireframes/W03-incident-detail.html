@@ -1,0 +1,257 @@
+<!--
+title: "Wireframe W03: Incident detail"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W03 Incident Detail</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.1 (W03 row), 7.1, 7.4, 10, 11. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>W03 Incident detail · wireframe</h1>
+    <p class="lede">Hero screen: a cited root-cause analysis and the decision that follows it. Low fidelity, synthetic data. Use the controls to view each screen state, fallback level and session type. Each state is named as the ViewModel exposes it (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>State</legend>
+      <button data-v="loading">loading</button><button data-v="abstained">abstained</button><button data-v="verified">verified</button><button data-v="degraded">degraded</button><button data-v="citationBlocked">citation blocked</button><button data-v="reopened">reopened</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L1">L1</button><button data-v="L2">L2</button><button data-v="L3">L3</button><button data-v="L4">L4</button><button data-v="L5">L5</button>
+    </fieldset>
+    <fieldset id="c-session"><legend>Session</legend>
+      <button data-v="human">human · shift lead</button><button data-v="token">API token</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <section class="screen" aria-label="Incident detail screen">
+    <div class="topbar">
+      <span class="chip" id="lvlchip">L0 Normal</span>
+      <span class="chip syn">SYNTHETIC DATA</span>
+      <span class="sp"></span>
+      <span>Tenant: Demo</span><span>Site: Plant A</span><span>Shift lead · signed in</span>
+    </div>
+    <div class="banner" id="banner" role="status"></div>
+
+    <!-- loading -->
+    <div data-states="loading" style="padding:14px">
+      <div class="skel" style="width:40%"></div><div class="skel l"></div>
+      <div class="grid"><div class="panel"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div><div class="panel"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div>
+    </div>
+
+    <div data-states="abstained verified degraded citationBlocked reopened">
+      <div class="banner bad" data-states="reopened"><b>REOPENED</b> Drift recurred before the required good cycles. Confidence in the previous top hypothesis was lowered.</div>
+      <div class="head">
+        <div class="row">
+          <h2>Weld Cell 4 / Coolant loop</h2>
+          <span class="kv">Impact <b>#1 · high</b></span>
+          <span class="kv">Lead time <b>6–14 h</b> (medium confidence)</span>
+          <span class="kv">Incident <b>INC-0042</b> · opened 08:12</span>
+        </div>
+        <div class="summary" data-states="abstained verified citationBlocked reopened">
+          <span class="chip ai">AI-generated</span>
+          <p>Cooling flow is trending down while transformer temperature rises; the controller is compensating. <span data-states="abstained citationBlocked reopened">Cause not yet confirmed.</span><span data-states="verified">Confirmed: a partly blocked strainer restricted coolant flow.</span></p>
+        </div>
+        <div class="summary" data-states="degraded">
+          <span class="chip">Template summary · no model in use</span>
+          <p>Alert: correlated drift on 3 signals at Weld Cell 4. Top ranked hypothesis: coolant restriction (58%). Evidence and citations below are unaffected.</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h3>Hypotheses</h3>
+          <div class="hyp"><span>1</span><span>Coolant restriction <span data-states="verified">✓ confirmed</span></span><span>58%</span><span class="bar"><i style="width:58%"></i></span></div>
+          <div class="hyp"><span>2</span><span>Flow sensor drift</span><span>34%</span><span class="bar"><i style="width:34%"></i></span></div>
+          <div class="hyp"><span>3</span><span>Controller fault</span><span>8%</span><span class="bar"><i style="width:8%"></i></span></div>
+          <h3 style="margin-top:16px">Sensor trust</h3>
+          <div class="trust"><span>Flow sensor FT-401</span><span class="lvl med">MEDIUM</span></div>
+          <div class="trust"><span>Return temperature TT-402</span><span class="lvl high">HIGH</span></div>
+          <div class="trust"><span>Pump current IT-405</span><span class="lvl high">HIGH</span></div>
+        </div>
+        <div class="panel">
+          <h3>Evidence ledger</h3>
+          <ul class="ev">
+            <li><span class="s">+</span><span>Return-temperature rise consistent with reduced flow (signal)</span></li>
+            <li data-states="abstained verified degraded reopened"><span class="s">+</span><span>Manual section 4.2, v3 (effective): strainer restriction raises return temperature <a class="cite" href="#c1">[1]</a></span></li>
+            <li><span class="s">−</span><span>Pump current unchanged (against H1)</span></li>
+          </ul>
+          <div class="blocked" data-states="citationBlocked"><b>Claim withheld.</b> A supporting passage could not be verified against its cited document version, so it is not shown (RAG-6). Retrieval log available to engineers.</div>
+          <p style="font-size:14px;margin:12px 0 0"><b>What would change this:</b> portable flow reading; strainer inspection.</p>
+          <h3 style="margin-top:16px">Citations</h3>
+          <div id="c1" class="cite" data-states="abstained verified degraded reopened">[1] Weld Transformer Manual v3, section 4.2 · effective 2025-03-01</div>
+          <div class="why" data-states="citationBlocked">No verified citations for this incident.</div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="callout" data-states="abstained citationBlocked degraded reopened">
+          <h4>Insufficient evidence to name a root cause</h4>
+          Cannot separate hypotheses 1 and 2. Cheapest check: portable flow reading and strainer inspection (about 10 min).
+        </div>
+        <div class="callout ok" data-states="verified">
+          <h4>Verified closure</h4>
+          Strainer cleaned at 11:05. Flow and return temperature back within reference behaviour for the required good cycles. Learning update queued for review.
+        </div>
+        <div class="wo" data-states="abstained citationBlocked degraded reopened">
+          <span class="tag">DRAFT · NOT SENT TO EQUIPMENT</span>
+          <span><b>Inspection work order</b> · portable flow reading + strainer check</span>
+          <span class="kv" id="tier">Tier 1 · shift lead approval</span>
+          <span style="flex:1"></span>
+          <button class="btn" id="reject">Reject</button>
+          <button class="btn primary" id="approve">Approve draft</button>
+          <div class="why" id="whydisabled" style="flex-basis:100%"></div>
+        </div>
+      </div>
+
+      <div class="timeline" aria-label="Incident timeline">
+        <span class="st done">alert</span><span class="ar">›</span><span class="st done">trust check</span><span class="ar">›</span><span class="st done">impact</span><span class="ar">›</span><span class="st done">hypotheses</span><span class="ar">›</span><span class="st done">retrieval</span><span class="ar">›</span><span class="st done" id="tl-abstain">abstain</span><span class="ar">›</span><span class="st done">draft</span><span class="ar">›</span><span class="st" id="tl-approve">approval</span><span class="ar">›</span><span class="st" id="tl-verify">verified</span>
+      </div>
+      <div class="footerbar"><a href="#">Open trace</a><a href="#">Give feedback</a></div>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.1 row W03 and section 7.1. Requirements: AGT-5, RAG-6, RAG-7, UI-7, UI-8; acceptance criteria UI-AC-3, UI-AC-4, UI-AC-5, UI-AC-6, UI-AC-7, UI-AC-8.</p>
+    <ul>
+      <li>Approval actions exist only for a human session with the required role (invariant 2). With an API token they are disabled and say why.</li>
+      <li>From L3 the minimum approval tier is 2 (03 section 13.2); the tier label changes with the fallback level.</li>
+      <li>Wording for safety and terminology is pending domain review (UO-4).</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"abstained",level:"L0",session:"human"};
+const banners={
+  L0:null,
+  L1:["warn","Reduced explanation quality: a smaller model is in use."],
+  L2:["warn","Explanations use templates. Alerts and evidence are unaffected."],
+  L3:["bad","Knowledge search unavailable: guidance is unverified and a higher approval tier is required."],
+  L4:["bad","Basic detection only (thresholds)."],
+  L5:["bad","Offline: edge alerts only. Changes will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>{
+    el.hidden=!el.dataset.states.split(" ").includes(S.state);});
+  const b=document.getElementById("banner"), m=banners[S.level];
+  if(m){b.className="banner "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;}else{b.hidden=true;}
+  document.getElementById("lvlchip").textContent=S.level==="L0"?"L0 Normal":S.level+" Degraded";
+  const hi=["L3","L4","L5"].includes(S.level);
+  document.getElementById("tier").textContent=hi?"Tier 2 minimum · reliability engineer (raised by "+S.level+")":"Tier 1 · shift lead approval";
+  const human=S.session==="human", canDecide=human&&!hi;
+  ["approve","reject"].forEach(id=>document.getElementById(id).disabled=!canDecide);
+  document.getElementById("whydisabled").textContent=!human
+    ?"Approval needs a signed-in person. API keys and agent tokens cannot approve or reject."
+    :hi?"Your role (shift lead) cannot decide at tier 2. Sent to a reliability engineer.":"";
+  document.getElementById("tl-approve").className="st"+(S.state==="verified"?" done":"");
+  document.getElementById("tl-verify").className="st"+(S.state==="verified"?" done":"");
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.fallbackLevel = "+S.level+" · vm.session = "+S.session;
+  for(const [k,id] of [["state","c-state"],["level","c-level"],["session","c-session"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["level","c-level"],["session","c-session"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;
+    if(k==="state"&&x.dataset.v==="degraded"&&S.level==="L0")S.level="L2";render();}));
+render();
+</script>
+</body>
+</html>

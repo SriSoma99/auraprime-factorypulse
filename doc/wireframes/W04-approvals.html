@@ -1,0 +1,269 @@
+<!--
+title: "Wireframe W04: Approvals"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W04 Approvals</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.1 (W04 row), 7.3, 7.4, 10; 03 sections 10 and 11. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+.layout{display:grid;grid-template-columns:330px 1fr}
+.list{border-right:1px solid var(--line);padding:12px}
+.list h2,.pane h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.item{border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px;font-size:14px;cursor:pointer}
+.item.on{border:2px solid var(--ink)}
+.item .meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);margin-top:3px}
+.timer{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.timer.soon{border-color:var(--warn-s);background:var(--warn-f)}
+.timer.gone{border-color:var(--bad-s);background:var(--bad-f)}
+.pane{padding:14px;display:grid;gap:14px;align-content:start}
+.pane h2{font-size:1.15rem;margin:0}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.facts div{font-size:12.5px;color:var(--muted)} .facts b{display:block;font-size:14.5px;color:var(--ink)}
+.rule{font-family:var(--mono);font-size:12px;color:var(--muted)}
+ul.sum{margin:0;padding-left:18px;font-size:14px} ul.sum li{margin:3px 0}
+.decide{border:1.5px solid var(--ink);border-radius:8px;padding:12px;display:grid;gap:10px}
+.decide label{font-size:13px;color:var(--muted)}
+.decide textarea{font:inherit;font-size:14px;width:100%;min-height:60px;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--paper);color:var(--ink)}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btns .btn{min-width:140px;min-height:44px}
+.empty{padding:40px 16px;text-align:center}
+.empty p{color:var(--muted)}
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr}
+  .list{border-right:0;border-bottom:1px solid var(--line)}
+  .facts{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>W04 Approvals · wireframe</h1>
+    <p class="lede">Decide pending draft actions one at a time. The policy engine sets the tier and the required role, every decision needs a signed-in person, and each decision is written to the audit log. Low fidelity, synthetic data; states are named as the ViewModel exposes them (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>State</legend>
+      <button data-v="loading">loading</button><button data-v="pending">pending</button><button data-v="decided">decided</button><button data-v="escalated">escalated</button><button data-v="expired">expired</button><button data-v="permissionDenied">permission denied</button><button data-v="empty">empty</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L1">L1</button><button data-v="L2">L2</button><button data-v="L3">L3</button><button data-v="L4">L4</button><button data-v="L5">L5</button>
+    </fieldset>
+    <fieldset id="c-session"><legend>Session</legend>
+      <button data-v="human">human · shift lead</button><button data-v="token">API token</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <section class="screen" aria-label="Approvals screen">
+    <div class="topbar">
+      <span class="chip" id="lvlchip">L0 Normal</span>
+      <span class="chip syn">SYNTHETIC DATA</span>
+      <span class="sp"></span>
+      <span>Tenant: Demo</span><span>Site: Plant A</span><span id="who">Shift lead · signed in</span>
+    </div>
+    <div class="banner" id="banner" role="status"></div>
+
+    <div data-states="loading" style="padding:14px"><div class="skel" style="width:30%"></div><div class="skel l"></div><div class="skel l"></div></div>
+
+    <div class="empty" data-states="empty">
+      <h3>Nothing waiting for your decision</h3>
+      <p>Drafts appear here when the policy engine assigns a tier your role can decide. Two drafts at tier 2 are waiting for a reliability engineer.</p>
+    </div>
+
+    <div class="layout" data-states="pending decided escalated expired permissionDenied">
+      <div class="list" aria-label="Pending approvals">
+        <h2>Waiting for you · 3</h2>
+        <div class="item on"><b>Inspection · Weld Cell 4 coolant</b><div class="meta"><span>Tier <span class="tierN">1</span></span><span>INC-0042</span><span class="timer soon" id="t1">expires in 25 min</span></div></div>
+        <div class="item"><b>Sensor check · Cell 3 PT-310</b><div class="meta"><span>Tier <span class="tierN">1</span></span><span>INC-0045</span><span class="timer">expires in 3 h</span></div></div>
+        <div class="item"><b>Inspection · Robot R7 servo</b><div class="meta"><span>Tier <span class="tierN">1</span></span><span>INC-0039</span><span class="timer">expires in 6 h</span></div></div>
+        <p class="why">Sorted by expiry. Bulk approval is not offered.</p>
+      </div>
+
+      <div class="pane">
+        <div class="banner bad" data-states="expired" style="border-radius:6px"><b>EXPIRED</b> No decision within the time limit. The incident went back to diagnosis; a new draft will be raised if still needed.</div>
+        <div class="banner warn" data-states="escalated" style="border-radius:6px"><b>ESCALATED</b> The timer ran out at tier 1 and this draft was escalated to a reliability engineer. You can still see it, but can no longer decide it.</div>
+        <div>
+          <span class="tag" style="font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px">DRAFT · NOT SENT TO EQUIPMENT</span>
+          <h2 style="margin-top:6px">Inspection work order · Weld Cell 4 coolant loop</h2>
+        </div>
+        <div class="facts">
+          <div>Tier<b id="tier">1 · shift lead</b></div>
+          <div>Requested by<b>Agent orchestrator</b></div>
+          <div>Line impact<b>#1 · high</b></div>
+          <div>Time left<b id="left">25 min</b></div>
+        </div>
+        <div>
+          <h3>Why this tier</h3>
+          <p style="margin:0;font-size:14px" id="why">Inspection on a high-impact asset, no line stop needed: tier 1.</p>
+          <p class="rule" id="rule">policy v12 · rules INSP-01, IMPACT-HIGH</p>
+        </div>
+        <div>
+          <h3>Evidence summary <span class="chip ai" style="text-transform:none;letter-spacing:0">AI-generated</span></h3>
+          <ul class="sum">
+            <li>Two causes are still possible: coolant restriction (58%) and flow sensor drift (34%).</li>
+            <li>A 10-minute check (portable flow reading and strainer inspection) separates them.</li>
+            <li>Cited: Weld Transformer Manual v3, section 4.2 <a href="W03-incident-detail.html" style="color:var(--accent)">Open incident</a></li>
+          </ul>
+        </div>
+
+        <div class="decide" data-states="pending permissionDenied">
+          <label for="reason">Reason (required to reject, optional to approve)</label>
+          <textarea id="reason" placeholder="For example: strainer was cleaned yesterday, check the sensor first"></textarea>
+          <div class="btns">
+            <button class="btn" id="reject">Reject</button>
+            <button class="btn primary" id="approve">Approve draft</button>
+          </div>
+          <div class="why" id="whyoff"></div>
+          <div class="why">Your decision, name and time are written to the audit log. Approving releases the draft to the technician; nothing is sent to equipment.</div>
+        </div>
+        <div class="callout ok" data-states="decided">
+          <h4>Approved by you at 08:52</h4>
+          The inspection is now on the technician's checklist (M04). Recorded in the audit log as event AUD-1187. <a href="#" style="color:var(--accent)">Undo is not available; raise a new draft to change course.</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.1 row W04 and the approval flow in 03 section 11. Requirements: POL-2, POL-4 (Community), POL-1, POL-3 (Full); acceptance criteria UI-AC-5, UI-AC-6, UI-AC-8.</p>
+    <ul>
+      <li>Approve and reject exist only in a human session with the required role (invariant 2). API keys and agent tokens see the screen read-only, with the reason stated.</li>
+      <li>From L3 the minimum tier is 2 (03 section 13.2), so a shift lead sees the draft but cannot decide it.</li>
+      <li>Escalation and expiry follow the timers in 03 section 11; timer lengths are configuration, not fixed in the design.</li>
+      <li>Open question: should "undo" exist for a short window after approving? The current design says no and asks for a new draft instead.</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"pending",level:"L0",session:"human"};
+const banners={L0:null,
+  L1:["warn","Reduced explanation quality: a smaller model is in use."],
+  L2:["warn","Explanations use templates. Alerts and evidence are unaffected."],
+  L3:["bad","Knowledge search unavailable: guidance is unverified and a higher approval tier is required."],
+  L4:["bad","Basic detection only (thresholds)."],
+  L5:["bad","Offline: edge alerts only. Changes will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.hidden=!el.dataset.states.split(" ").includes(S.state));
+  const b=document.getElementById("banner"),m=banners[S.level];
+  if(m){b.className="banner "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;}else b.hidden=true;
+  document.getElementById("lvlchip").textContent=S.level==="L0"?"L0 Normal":S.level+" Degraded";
+  const hi=["L3","L4","L5"].includes(S.level), human=S.session==="human", denied=S.state==="permissionDenied";
+  document.getElementById("tier").textContent=hi?"2 · reliability engineer":denied?"2 · reliability engineer":"1 · shift lead";
+  document.getElementById("why").textContent=hi?"Any action while the platform runs at "+S.level+" needs at least tier 2.":denied?"Part replacement on a high-impact asset: tier 2.":"Inspection on a high-impact asset, no line stop needed: tier 1.";
+  document.getElementById("rule").textContent=hi?"policy v12 · rules INSP-01, IMPACT-HIGH, FALLBACK-MIN-T2":denied?"policy v12 · rules REPL-02, IMPACT-HIGH":"policy v12 · rules INSP-01, IMPACT-HIGH";
+  document.querySelectorAll(".tierN").forEach(e=>e.textContent=hi?"2 (raised by "+S.level+")":"1");
+  const can=human&&!hi&&!denied;
+  ["approve","reject"].forEach(id=>document.getElementById(id).disabled=!can);
+  document.getElementById("whyoff").textContent=!human?"Approval needs a signed-in person. API keys and agent tokens cannot approve or reject."
+    :(hi||denied)?"Your role (shift lead) cannot decide tier 2. A reliability engineer has been notified. Ask for access in Admin (W09) if you should hold this role.":"";
+  document.getElementById("who").textContent=human?"Shift lead · signed in":"API token · project demo-integration (read-only)";
+  const t=document.getElementById("t1");
+  t.className="timer "+(S.state==="expired"?"gone":"soon"); t.textContent=S.state==="expired"?"expired":S.state==="escalated"?"escalated":"expires in 25 min";
+  document.getElementById("left").textContent=S.state==="expired"?"expired 08:40":S.state==="escalated"?"escalated 08:35":S.state==="decided"?"decided":"25 min";
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.fallbackLevel = "+S.level+" · vm.session = "+S.session;
+  for(const [k,id] of [["state","c-state"],["level","c-level"],["session","c-session"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["level","c-level"],["session","c-session"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;render();}));
+render();
+</script>
+</body>
+</html>

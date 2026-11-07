@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm:*)", "Bash(npx:*)", "Bash(node:*)", "Bash(tsx:*)",
+      "Bash(docker compose:*)", "Bash(docker ps:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git add:*)", "Bash(git commit:*)",
+      "Bash(git log:*)", "Bash(grep:*)", "Bash(ls:*)", "Bash(cat:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)", "Bash(git tag:*)", "Bash(gcloud:*)",
+      "Bash(rm -rf:*)", "Read(./infra/local/.env.local)", "Read(./apps/app/.env.local)"
+    ]
+  }
+}

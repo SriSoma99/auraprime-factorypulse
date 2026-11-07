@@ -1,0 +1,1217 @@
+# AuraPrime FactoryPulse UI API contract (ADR-030 item 1).
+# Source of truth for the mock API, the generated SDK (packages/sdk-ts) and, later, the real API gateway (APP-17).
+# Front matter (doc convention): title UI API contract; status draft; edition full;
+# related ../02-ui.md, ../03-technical-design.md, ../adr/ADR-030-ui-first-mock-backend.md
+openapi: 3.1.0
+info:
+  title: AuraPrime FactoryPulse UI API
+  version: 0.1.0
+  license:
+    name: Apache-2.0 (ADR-036)
+    identifier: Apache-2.0
+  description: >
+    Endpoints the web and mobile app need for the screens in doc/02-ui.md section 6.
+    All data in the local environment is synthetic (ADR-019). Fields marked Full-only
+    are null in the Community edition. The product is advisory: no endpoint actuates equipment,
+    and work orders are drafts (invariant 1). Only a human session can decide an approval (invariant 2).
+servers:
+  - url: /
+security:
+  - bearer: []
+paths:
+  /v1/session:
+    get:
+      operationId: getSession
+      summary: Who is calling, with role, session type, tenant and edition
+      responses:
+        "200": { description: Session, content: { application/json: { schema: { $ref: "#/components/schemas/Session" } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+  /v1/status:
+    get:
+      operationId: getPlatformStatus
+      summary: Current fallback level for the banner (UI-7)
+      responses:
+        "200": { description: Status, content: { application/json: { schema: { $ref: "#/components/schemas/PlatformStatus" } } } }
+  /v1/lines:
+    get:
+      operationId: listLines
+      summary: Production lines for the current site
+      responses:
+        "200": { description: Lines, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/LineSummary" } } } } }
+  /v1/admin/users:
+    get:
+      operationId: listTenantUsers
+      summary: W09. Users of the caller's tenant with their roles (admin view access)
+      responses:
+        "200": { description: Users, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/AdminUser" } } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+  /v1/admin/users/{principalId}/role:
+    put:
+      operationId: assignRole
+      summary: W09. Assign a role to a human user of the tenant; never your own; audited (admin use access)
+      parameters:
+        - { name: principalId, in: path, required: true, schema: { type: string } }
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [role], properties: { role: { $ref: "#/components/schemas/Role" } } } } }
+      responses:
+        "200": { description: Assigned, content: { application/json: { schema: { $ref: "#/components/schemas/AdminUserChange" } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/admin/permissions:
+    get:
+      operationId: getRolePermissions
+      summary: W09. Screen access per role for the tenant, with config defaults and overrides (admin view access)
+      responses:
+        "200": { description: Matrix, content: { application/json: { schema: { $ref: "#/components/schemas/RolePermissions" } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+    put:
+      operationId: setRolePermission
+      summary: W09. Override one role's access to one screen, or reset it to the config default; audited (admin use access)
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, screen, access]
+              properties:
+                role: { $ref: "#/components/schemas/Role" }
+                screen: { $ref: "#/components/schemas/Screen" }
+                access: { type: string, enum: [none, view, use, default] }
+      responses:
+        "200": { description: Changed, content: { application/json: { schema: { $ref: "#/components/schemas/RolePermissionChange" } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/plant:
+    get:
+      operationId: getPlantView
+      summary: Every site, line, station, machine and sensor with its configured limits, live value and basic health for W14 (ING-7, ING-12, UI-4)
+      responses:
+        "200": { description: Plant view, content: { application/json: { schema: { $ref: "#/components/schemas/PlantView" } } } }
+  /v1/lines/{lineId}/overview:
+    get:
+      operationId: getLineOverview
+      summary: Stations, links, bottleneck and cascade for W01 (LIM-4, Full-only parts null in Community)
+      parameters: [ { $ref: "#/components/parameters/lineId" } ]
+      responses:
+        "200": { description: Line overview, content: { application/json: { schema: { $ref: "#/components/schemas/LineOverview" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/alerts:
+    get:
+      operationId: listAlerts
+      summary: Alert queue for W02, ranked by line impact in Full and by newest in Community
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [open, all], default: open } }
+        - { name: lineId, in: query, schema: { type: string } }
+      responses:
+        "200": { description: Alerts, content: { application/json: { schema: { $ref: "#/components/schemas/AlertList" } } } }
+  /v1/incidents/{incidentId}:
+    get:
+      operationId: getIncident
+      summary: Incident detail for W03
+      parameters: [ { $ref: "#/components/parameters/incidentId" } ]
+      responses:
+        "200": { description: Incident, content: { application/json: { schema: { $ref: "#/components/schemas/Incident" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/approvals:
+    get:
+      operationId: listApprovals
+      summary: Approvals visible to the caller, soonest expiry first (W04, M03)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, all], default: pending } }
+      responses:
+        "200": { description: Approvals, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Approval" } } } } }
+  /v1/approvals/{approvalId}:
+    get:
+      operationId: getApproval
+      summary: One approval with its rationale and evidence summary
+      parameters: [ { $ref: "#/components/parameters/approvalId" } ]
+      responses:
+        "200": { description: Approval, content: { application/json: { schema: { $ref: "#/components/schemas/Approval" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/approvals/{approvalId}/decision:
+    post:
+      operationId: decideApproval
+      summary: Approve or reject a draft. Human session with the required role only (invariant 2)
+      parameters:
+        - { $ref: "#/components/parameters/approvalId" }
+        - { $ref: "#/components/parameters/idempotencyKey" }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ApprovalDecision" } } }
+      responses:
+        "200": { description: Decision recorded, content: { application/json: { schema: { $ref: "#/components/schemas/Approval" } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /v1/sensors:
+    get:
+      operationId: listSensors
+      summary: Sensors with trust, lowest first (W05, Full-only trust null in Community)
+      parameters:
+        - { name: assetId, in: query, schema: { type: string } }
+      responses:
+        "200": { description: Sensors, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/SensorSummary" } } } } }
+  /v1/sensors/{sensorId}/trust:
+    get:
+      operationId: getSensorTrust
+      summary: Trust checks, consistency series and verdict history (TRU-1 to TRU-4, Full-only)
+      parameters: [ { $ref: "#/components/parameters/sensorId" } ]
+      responses:
+        "200": { description: Sensor trust, content: { application/json: { schema: { $ref: "#/components/schemas/SensorTrust" } } } }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/work-orders/{workOrderId}:
+    get:
+      operationId: getWorkOrder
+      summary: Work order with checklist steps (M04)
+      parameters: [ { $ref: "#/components/parameters/workOrderId" } ]
+      responses:
+        "200": { description: Work order, content: { application/json: { schema: { $ref: "#/components/schemas/WorkOrder" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+  /v1/work-orders/{workOrderId}/steps/{stepNo}:
+    put:
+      operationId: saveWorkOrderStep
+      summary: Save one checklist step (reading, choice, completion)
+      parameters:
+        - { $ref: "#/components/parameters/workOrderId" }
+        - { name: stepNo, in: path, required: true, schema: { type: integer, minimum: 1 } }
+        - { $ref: "#/components/parameters/idempotencyKey" }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/StepInput" } } }
+      responses:
+        "200": { description: Updated work order, content: { application/json: { schema: { $ref: "#/components/schemas/WorkOrder" } } } }
+        "404": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/Problem" }
+  /mock/principals:
+    get:
+      operationId: listMockPrincipals
+      summary: Local only. Seeded sign-in identities for testing roles and session types
+      security: []
+      responses:
+        "200": { description: Principals, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/MockPrincipal" } } } } }
+        "404": { description: Mock controls disabled }
+  /mock/state:
+    get:
+      operationId: getMockState
+      summary: Local only. Scenario controls
+      security: []
+      responses:
+        "200": { description: State, content: { application/json: { schema: { $ref: "#/components/schemas/MockState" } } } }
+        "404": { description: Mock controls disabled }
+    put:
+      operationId: setMockState
+      summary: Local only. Change scenario controls such as the fallback level
+      security: []
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/MockState" } } }
+      responses:
+        "200": { description: State, content: { application/json: { schema: { $ref: "#/components/schemas/MockState" } } } }
+        "404": { description: Mock controls disabled }
+  /mock/reset:
+    post:
+      operationId: resetMockData
+      summary: Local only. Re-seed the database from the synthetic generator
+      security: []
+      responses:
+        "204": { description: Reset complete }
+        "404": { description: Mock controls disabled }
+  /mock/knowledge/samples:
+    get:
+      operationId: getMockKnowledgeSamples
+      summary: Local only. Sample documents for Acme line 1 written to the upload templates (ADR-041)
+      security: []
+      responses:
+        "200":
+          description: Sample documents
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/SampleDocument" } } } }
+        "404": { description: Mock controls disabled }
+  /mock/telemetry:
+    post:
+      operationId: injectMockTelemetry
+      summary: Local only. Write readings for one registered sensor, one second apart, ending ageSeconds before now (W14 tests and demos)
+      security: []
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/MockTelemetry" } } }
+      responses:
+        "204": { description: Readings written }
+        "404": { description: Mock controls disabled or sensor not registered }
+        "422": { description: Invalid readings }
+  /v1/knowledge/stats:
+    get:
+      operationId: getKnowledgeStats
+      summary: Corpus statistics, vector index status, and active RAG model
+      responses:
+        "200":
+          description: Knowledge statistics
+          content: { application/json: { schema: { $ref: "#/components/schemas/KnowledgeStats" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/documents:
+    get:
+      operationId: getKnowledgeDocuments
+      summary: Every knowledge document with its lifecycle state (RAG-10, RAG-13)
+      responses:
+        "200":
+          description: Documents, pending review first
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/KnowledgeDocument" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/templates:
+    get:
+      operationId: getKnowledgeTemplates
+      summary: Document templates, upload rules and the equipment a document can be for (RAG-12)
+      responses:
+        "200":
+          description: Templates and registered equipment
+          content: { application/json: { schema: { $ref: "#/components/schemas/KnowledgeTemplates" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/documents/{documentId}/approve:
+    post:
+      operationId: approveKnowledgeDocument
+      summary: A second person approves a pending upload so it can be retrieved (RAG-10)
+      parameters: [{ $ref: "#/components/parameters/documentId" }]
+      responses:
+        "200":
+          description: Approved
+          content: { application/json: { schema: { $ref: "#/components/schemas/DocumentChange" } } }
+        "403": { description: Not a human session or no use access to knowledge }
+        "409": { description: "Not pending review, or the approver uploaded it" }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/documents/{documentId}:
+    delete:
+      operationId: removeKnowledgeDocument
+      summary: Delete a document nobody cited; withdraw a cited one so provenance stays reproducible (RAG-13)
+      parameters: [{ $ref: "#/components/parameters/documentId" }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/DocumentRemoval" } } }
+      responses:
+        "200":
+          description: Deleted or withdrawn
+          content: { application/json: { schema: { $ref: "#/components/schemas/DocumentChange" } } }
+        "409": { description: Already withdrawn }
+        "422": { description: Reason missing or too short }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/query:
+    post:
+      operationId: queryKnowledge
+      summary: Hybrid vector RAG query with citation verification (RAG-1..10)
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/RAGQueryRequest" } } }
+      responses:
+        "200":
+          description: RAG query answer with verified citations
+          content: { application/json: { schema: { $ref: "#/components/schemas/RAGQueryResponse" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/knowledge/upload:
+    post:
+      operationId: uploadKnowledgeDocument
+      summary: Upload a document that follows a template; it is checked (RAG-12), scanned (RAG-10), indexed and left pending review
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/DocumentUploadRequest" } } }
+      responses:
+        "200":
+          description: Indexed and pending review
+          content: { application/json: { schema: { $ref: "#/components/schemas/DocumentChange" } } }
+        "409": { description: The same text is already uploaded }
+        "422":
+          description: Not accepted; problems lists every reason (RAG-10, RAG-12)
+          content: { application/problem+json: { schema: { $ref: "#/components/schemas/Problem" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  # External developer endpoints (API-3, API-5, API-6): served by the API gateway (APP-17) on its own port, not by the mock API.
+  /v1/health:
+    get:
+      operationId: getGatewayHealth
+      summary: API gateway liveness
+      x-served-by: api-gateway
+      security: []
+      responses:
+        "200":
+          description: Gateway is up
+          content: { application/json: { schema: { $ref: "#/components/schemas/GatewayHealth" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/api-keys:
+    get:
+      operationId: listApiKeys
+      summary: API keys of the caller's tenant; the key hash is never returned (API-3)
+      x-served-by: api-gateway
+      responses:
+        "200":
+          description: Keys
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ApiKey" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+    post:
+      operationId: createApiKey
+      summary: Create an API key; the secret is returned once (API-3). An API key can never approve (invariant 2).
+      x-served-by: api-gateway
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ApiKeyCreateRequest" } } }
+      responses:
+        "200":
+          description: Created
+          content: { application/json: { schema: { $ref: "#/components/schemas/ApiKeyCreated" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/api-keys/{keyId}:
+    delete:
+      operationId: revokeApiKey
+      summary: Revoke an API key of the caller's tenant (API-3)
+      x-served-by: api-gateway
+      parameters:
+        - { name: keyId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Revoked
+          content: { application/json: { schema: { $ref: "#/components/schemas/ApiKeyRevoked" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/usage:
+    get:
+      operationId: getUsage
+      summary: Metered usage of the caller's tenant, optionally for one meter (API-5)
+      x-served-by: api-gateway
+      parameters:
+        - { name: meter, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Usage summary
+          content: { application/json: { schema: { $ref: "#/components/schemas/UsageSummary" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/webhooks:
+    post:
+      operationId: registerWebhook
+      summary: Register a webhook endpoint; the response carries its signing secret (API-6)
+      x-served-by: api-gateway
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WebhookRegisterRequest" } } }
+      responses:
+        "200":
+          description: Registered
+          content: { application/json: { schema: { $ref: "#/components/schemas/WebhookEndpoint" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/webhooks/test-dispatch:
+    post:
+      operationId: testDispatchWebhook
+      summary: Send a test event to the tenant's endpoints subscribed to it (API-6)
+      x-served-by: api-gateway
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WebhookDispatchRequest" } } }
+      responses:
+        "200":
+          description: Dispatch results
+          content: { application/json: { schema: { $ref: "#/components/schemas/WebhookDispatchResponse" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /v1/webhooks/deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      summary: Webhook deliveries of the caller's tenant, optionally for one endpoint (API-6)
+      x-served-by: api-gateway
+      parameters:
+        - { name: endpointId, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: Deliveries
+          content: { application/json: { schema: { $ref: "#/components/schemas/WebhookDeliveryList" } } }
+        default: { $ref: "#/components/responses/Problem" }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+  parameters:
+    lineId: { name: lineId, in: path, required: true, schema: { type: string } }
+    incidentId: { name: incidentId, in: path, required: true, schema: { type: string } }
+    approvalId: { name: approvalId, in: path, required: true, schema: { type: string } }
+    sensorId: { name: sensorId, in: path, required: true, schema: { type: string } }
+    workOrderId: { name: workOrderId, in: path, required: true, schema: { type: string } }
+    documentId: { name: documentId, in: path, required: true, schema: { type: string } }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated key so offline retries are applied once (UI-AC-10)
+      schema: { type: string, minLength: 8, maxLength: 128 }
+  responses:
+    Problem:
+      description: Error (RFC 9457 problem details)
+      content: { application/problem+json: { schema: { $ref: "#/components/schemas/Problem" } } }
+  schemas:
+    GatewayHealth:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: { type: string }
+        service: { type: string }
+        version: { type: string }
+    ApiKey:
+      type: object
+      required: [id, tenant_id, name, key_prefix, scopes, rate_limit_per_min, monthly_quota, quota_used, revoked, created_at]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        project_id: { type: [string, "null"] }
+        name: { type: string }
+        key_prefix: { type: string }
+        scopes: { type: array, items: { type: string } }
+        rate_limit_per_min: { type: integer }
+        monthly_quota: { type: integer }
+        quota_used: { type: integer }
+        expires_at: { type: [string, "null"], format: date-time }
+        revoked: { type: boolean }
+        created_at: { type: string, format: date-time }
+        last_used_at: { type: [string, "null"], format: date-time }
+    ApiKeyCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        scopes: { type: array, items: { type: string } }
+        rateLimitPerMin: { type: integer }
+        monthlyQuota: { type: integer }
+        expiresInDays: { type: integer }
+    ApiKeyCreated:
+      type: object
+      required: [id, name, keyPrefix, secretKey, scopes, rateLimitPerMin, monthlyQuota, expiresAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        keyPrefix: { type: string }
+        secretKey: { type: string, description: Shown once }
+        scopes: { type: array, items: { type: string } }
+        rateLimitPerMin: { type: integer }
+        monthlyQuota: { type: integer }
+        expiresAt: { type: [string, "null"], format: date-time }
+    ApiKeyRevoked:
+      type: object
+      required: [success, keyId, status]
+      properties:
+        success: { type: boolean }
+        keyId: { type: string }
+        status: { type: string, enum: [revoked] }
+    UsageSummary:
+      type: object
+      required: [tenantId, items]
+      properties:
+        tenantId: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            required: [meter, totalQuantity, eventCount]
+            properties:
+              meter: { type: string }
+              totalQuantity: { type: number }
+              eventCount: { type: integer }
+    WebhookRegisterRequest:
+      type: object
+      required: [url, events]
+      properties:
+        url: { type: string, format: uri }
+        events: { type: array, minItems: 1, items: { type: string } }
+    WebhookEndpoint:
+      type: object
+      required: [id, tenant_id, url, secret_token, events, active, created_at]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        url: { type: string, format: uri }
+        secret_token: { type: string }
+        events: { type: array, items: { type: string } }
+        active: { type: boolean }
+        created_at: { type: string, format: date-time }
+    WebhookDispatchRequest:
+      type: object
+      required: [eventType]
+      properties:
+        eventType: { type: string }
+        payload: { type: object, additionalProperties: true }
+    WebhookDispatchResponse:
+      type: object
+      required: [dispatched, results]
+      properties:
+        dispatched: { type: integer }
+        results:
+          type: array
+          items:
+            type: object
+            required: [deliveryId, endpointId, status, attempts]
+            properties:
+              deliveryId: { type: string }
+              endpointId: { type: string }
+              status: { type: string, enum: [delivered, failed] }
+              responseStatus: { type: integer }
+              attempts: { type: integer }
+    WebhookDelivery:
+      type: object
+      required: [id, tenant_id, endpoint_id, event_type, payload, signature, attempts, status, created_at]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        endpoint_id: { type: string }
+        event_type: { type: string }
+        payload: { type: object, additionalProperties: true }
+        signature: { type: string }
+        attempts: { type: integer }
+        status: { type: string, enum: [pending, delivered, failed] }
+        response_status: { type: [integer, "null"] }
+        last_attempt_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+    WebhookDeliveryList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/WebhookDelivery" } }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        traceId: { type: string }
+        problems: { type: array, items: { $ref: "#/components/schemas/UploadProblem" }, description: Every reason an upload was refused (RAG-12) }
+    UploadProblem:
+      type: object
+      required: [field, code, message]
+      properties:
+        field: { type: string, enum: [title, docType, assetId, version, effectiveFrom, content, classification] }
+        code: { type: string }
+        message: { type: string }
+    FallbackLevel: { type: string, enum: [L0, L1, L2, L3, L4, L5] }
+    Role: { type: string, enum: [operator, technician, shift_lead, reliability_engineer, operations_manager, admin] }
+    SessionType: { type: string, enum: [human, api_key, agent_token] }
+    Edition: { type: string, enum: [community, full] }
+    ImpactLevel: { type: string, enum: [high, medium, low] }
+    TrustLevel: { type: string, enum: [high, medium, low, not_scored] }
+    Session:
+      type: object
+      required: [principalId, displayName, role, sessionType, tenantId, tenantName, siteId, siteName, edition, permissions]
+      properties:
+        principalId: { type: string }
+        displayName: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        sessionType: { $ref: "#/components/schemas/SessionType" }
+        tenantId: { type: string }
+        tenantName: { type: string }
+        siteId: { type: string }
+        siteName: { type: string }
+        edition: { $ref: "#/components/schemas/Edition" }
+        permissions: { $ref: "#/components/schemas/ScreenPermissions" }
+    Screen: { type: string, description: Screens and features under role-based access (ADR-040), enum: [plant, line, alerts, approvals, field, knowledge, trust, learning, control_tower, compliance, developer, admin, settings] }
+    Access: { type: string, description: "none hides the screen and its API; view allows reading; use also allows its actions", enum: [none, view, use] }
+    ScreenPermissions:
+      type: object
+      description: Effective access of the caller's role per screen, after tenant overrides and the edition (NFR-S6, ADR-040)
+      required: [plant, line, alerts, approvals, field, knowledge, trust, learning, control_tower, compliance, developer, admin, settings]
+      properties:
+        plant: { $ref: "#/components/schemas/Access" }
+        line: { $ref: "#/components/schemas/Access" }
+        alerts: { $ref: "#/components/schemas/Access" }
+        approvals: { $ref: "#/components/schemas/Access" }
+        field: { $ref: "#/components/schemas/Access" }
+        knowledge: { $ref: "#/components/schemas/Access" }
+        trust: { $ref: "#/components/schemas/Access" }
+        learning: { $ref: "#/components/schemas/Access" }
+        control_tower: { $ref: "#/components/schemas/Access" }
+        compliance: { $ref: "#/components/schemas/Access" }
+        developer: { $ref: "#/components/schemas/Access" }
+        admin: { $ref: "#/components/schemas/Access" }
+        settings: { $ref: "#/components/schemas/Access" }
+      additionalProperties: false
+    AdminUser:
+      type: object
+      required: [principalId, displayName, role, sessionType, siteId, assignable]
+      properties:
+        principalId: { type: string }
+        displayName: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        sessionType: { $ref: "#/components/schemas/SessionType" }
+        siteId: { type: string }
+        assignable: { type: boolean, description: Only human users have assignable roles }
+    AdminUserChange:
+      type: object
+      required: [user, auditId]
+      properties:
+        user: { $ref: "#/components/schemas/AdminUser" }
+        auditId: { type: string }
+    RolePermissionCell:
+      type: object
+      required: [role, screen, access, defaultAccess, overridden, locked]
+      properties:
+        role: { $ref: "#/components/schemas/Role" }
+        screen: { $ref: "#/components/schemas/Screen" }
+        access: { $ref: "#/components/schemas/Access" }
+        defaultAccess: { $ref: "#/components/schemas/Access" }
+        overridden: { type: boolean }
+        locked: { type: boolean, description: The admin role's own Admin access cannot change (no lockout) }
+    RolePermissions:
+      type: object
+      required: [roles, screens, editionHidden, cells]
+      properties:
+        roles: { type: array, items: { $ref: "#/components/schemas/Role" } }
+        screens: { type: array, items: { $ref: "#/components/schemas/Screen" } }
+        editionHidden: { type: array, items: { $ref: "#/components/schemas/Screen" }, description: "Screens this edition does not include, whatever the role grants" }
+        cells: { type: array, items: { $ref: "#/components/schemas/RolePermissionCell" } }
+    RolePermissionChange:
+      type: object
+      required: [cell, auditId]
+      properties:
+        cell: { $ref: "#/components/schemas/RolePermissionCell" }
+        auditId: { type: string }
+    PlatformStatus:
+      type: object
+      required: [fallbackLevel, since, minimumApprovalTier]
+      properties:
+        fallbackLevel: { $ref: "#/components/schemas/FallbackLevel" }
+        reason: { type: [string, "null"] }
+        since: { type: string, format: date-time }
+        minimumApprovalTier: { type: integer, minimum: 1, description: "Raised to 2 from L3 (03 section 13.2)" }
+        liveUpdatedAt: { type: string, format: date-time }
+    SensorHealthStatus:
+      type: string
+      description: Basic health from registry limits and recent readings (ING-12). Precedence no_data, stale, out_of_range, flatline, ok.
+      enum: [ok, out_of_range, flatline, stale, no_data, not_configured]
+    MachineState:
+      type: string
+      description: From the machine's state sensor and its run and stop thresholds; unknown without a fresh reading.
+      enum: [running, idle, stopped, unknown]
+    PlantSensor:
+      type: object
+      required: [id, name, measurand, unit, normalRange, instrumentRange, maxSilenceSeconds, status, direction, lastValue, lastAt, silentForSeconds]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        measurand: { type: [string, "null"] }
+        unit: { type: string }
+        normalRange: { oneOf: [ { $ref: "#/components/schemas/Range" }, { type: "null" } ] }
+        instrumentRange: { oneOf: [ { $ref: "#/components/schemas/Range" }, { type: "null" } ] }
+        maxSilenceSeconds: { type: [integer, "null"] }
+        status: { $ref: "#/components/schemas/SensorHealthStatus" }
+        direction: { type: [string, "null"], enum: [low, high, null] }
+        lastValue: { type: [number, "null"] }
+        lastAt: { type: [string, "null"], format: date-time }
+        silentForSeconds: { type: [integer, "null"] }
+    PlantMachine:
+      type: object
+      required: [id, name, equipmentType, plantTag, model, state, stateSensorId, sensors]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        equipmentType: { type: [string, "null"] }
+        plantTag: { type: [string, "null"] }
+        model: { type: [string, "null"] }
+        state: { $ref: "#/components/schemas/MachineState" }
+        stateSensorId: { type: [string, "null"] }
+        sensors: { type: array, items: { $ref: "#/components/schemas/PlantSensor" } }
+    PlantStation:
+      type: object
+      required: [id, name, position, cycleTimeSeconds, isBottleneck, bufferToNextMinutes, machines]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        position: { type: integer }
+        cycleTimeSeconds: { type: number }
+        isBottleneck: { type: boolean }
+        bufferToNextMinutes: { type: [number, "null"] }
+        machines: { type: array, items: { $ref: "#/components/schemas/PlantMachine" } }
+    PlantLine:
+      type: object
+      required: [id, name, stations]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        stations: { type: array, items: { $ref: "#/components/schemas/PlantStation" } }
+    PlantSite:
+      type: object
+      required: [id, name, lines]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        lines: { type: array, items: { $ref: "#/components/schemas/PlantLine" } }
+    PlantView:
+      type: object
+      required: [generatedAt, lookbackMinutes, counts, sites]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        lookbackMinutes: { type: integer }
+        counts:
+          type: object
+          description: Sensors per health status across the whole plant.
+          required: [ok, out_of_range, flatline, stale, no_data, not_configured]
+          properties:
+            ok: { type: integer }
+            out_of_range: { type: integer }
+            flatline: { type: integer }
+            stale: { type: integer }
+            no_data: { type: integer }
+            not_configured: { type: integer }
+        sites: { type: array, items: { $ref: "#/components/schemas/PlantSite" } }
+    LineSummary:
+      type: object
+      required: [id, name, openAlerts]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        openAlerts: { type: integer }
+    Station:
+      type: object
+      required: [id, name, cycleTimeSeconds, state, openAlerts, lastReadingAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        cycleTimeSeconds: { type: number }
+        state: { type: string, enum: [normal, alert] }
+        openAlerts: { type: integer }
+        lastReadingAt: { type: string, format: date-time }
+        incidentId: { type: [string, "null"] }
+        isBottleneck: { type: [boolean, "null"], description: Full-only }
+    LineOverview:
+      type: object
+      required: [line, stations, links, impactStatus]
+      properties:
+        line: { $ref: "#/components/schemas/LineSummary" }
+        stations: { type: array, items: { $ref: "#/components/schemas/Station" } }
+        links:
+          type: array
+          items:
+            type: object
+            required: [fromStationId, toStationId]
+            properties:
+              fromStationId: { type: string }
+              toStationId: { type: string }
+              bufferMinutes: { type: [number, "null"] }
+        impactStatus: { type: string, enum: [estimated, basic, unknown, not_available], description: "not_available in Community" }
+        cascade:
+          type: [object, "null"]
+          description: Full-only
+          required: [fromStationId, toStationId, description]
+          properties:
+            fromStationId: { type: string }
+            toStationId: { type: string }
+            description: { type: string }
+        stationImpact:
+          type: [object, "null"]
+          description: Full-only. Impact for the station with the top-ranked alert
+          required: [stationId, throughputAtRiskPct, rejectRisk]
+          properties:
+            stationId: { type: string }
+            throughputAtRiskPct: { $ref: "#/components/schemas/Range" }
+            rejectRisk: { type: string, enum: [low, medium, high] }
+    Range:
+      type: object
+      required: [min, max]
+      properties: { min: { type: number }, max: { type: number } }
+    LeadTime:
+      type: object
+      required: [minHours, maxHours, confidence]
+      properties:
+        minHours: { type: number }
+        maxHours: { type: number }
+        confidence: { type: string, enum: [low, medium, high] }
+    TrustBadge:
+      type: object
+      required: [level]
+      properties:
+        level: { $ref: "#/components/schemas/TrustLevel" }
+        score: { type: [number, "null"], minimum: 0, maximum: 1 }
+    Alert:
+      type: object
+      required: [id, assetName, stationName, signalName, detail, status, arrivedAt, isSynthetic]
+      properties:
+        id: { type: string }
+        assetName: { type: string }
+        stationName: { type: string }
+        signalName: { type: string }
+        detail: { type: string }
+        status: { type: string, enum: [new, acknowledged, assigned, grouped, incident_open, resolved] }
+        statusNote: { type: [string, "null"] }
+        rank: { type: [integer, "null"], description: "Full-only impact rank" }
+        impact: { oneOf: [ { $ref: "#/components/schemas/ImpactLevel" }, { type: "null" } ], description: Full-only }
+        leadTime: { oneOf: [ { $ref: "#/components/schemas/LeadTime" }, { type: "null" } ], description: "Full-only (DET-3)" }
+        trust: { oneOf: [ { $ref: "#/components/schemas/TrustBadge" }, { type: "null" } ], description: "Full-only (TRU-4)" }
+        groupId: { type: [string, "null"] }
+        incidentId: { type: [string, "null"] }
+        arrivedAt: { type: string, format: date-time }
+        isSynthetic: { type: boolean }
+    AlertGroup:
+      type: object
+      required: [id, title, alertIds, likelyCauses]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        alertIds: { type: array, items: { type: string } }
+        likelyCauses: { type: integer }
+        incidentId: { type: [string, "null"] }
+    AlertList:
+      type: object
+      required: [items, groups, total, likelyCauses, sortedBy]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Alert" } }
+        groups: { type: array, items: { $ref: "#/components/schemas/AlertGroup" } }
+        total: { type: integer }
+        likelyCauses: { type: integer }
+        sortedBy: { type: string, enum: [impact, newest] }
+    Citation:
+      type: object
+      required: [id, title, section, version, effectiveFrom, verified]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        section: { type: string }
+        version: { type: string }
+        effectiveFrom: { type: string, format: date }
+        verified: { type: boolean }
+    Incident:
+      type: object
+      required: [id, title, state, openedAt, summary, hypotheses, evidence, whatWouldChange, citations, sensorTrust, timeline, traceId]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        state: { type: string, enum: [diagnosing, abstained, awaiting_approval, in_progress, verifying, verified, reopened] }
+        openedAt: { type: string, format: date-time }
+        rank: { type: [integer, "null"] }
+        impact: { oneOf: [ { $ref: "#/components/schemas/ImpactLevel" }, { type: "null" } ] }
+        leadTime: { oneOf: [ { $ref: "#/components/schemas/LeadTime" }, { type: "null" } ] }
+        summary:
+          type: object
+          required: [text, kind]
+          properties:
+            text: { type: string }
+            kind: { type: string, enum: [ai, template], description: "template from L2 (no model)" }
+        hypotheses:
+          type: array
+          items:
+            type: object
+            required: [rank, name, probability, confirmed]
+            properties:
+              rank: { type: integer }
+              name: { type: string }
+              probability: { type: number, minimum: 0, maximum: 1 }
+              confirmed: { type: boolean }
+        evidence:
+          type: array
+          items:
+            type: object
+            required: [polarity, text]
+            properties:
+              polarity: { type: string, enum: [for, against] }
+              text: { type: string }
+              citationId: { type: [string, "null"] }
+        citationBlocked: { type: boolean, description: "A claim was withheld because its citation failed verification (RAG-6)" }
+        whatWouldChange: { type: array, items: { type: string } }
+        citations: { type: array, items: { $ref: "#/components/schemas/Citation" } }
+        sensorTrust:
+          type: array
+          description: Full-only; empty in Community
+          items:
+            type: object
+            required: [sensorId, name, level]
+            properties:
+              sensorId: { type: string }
+              name: { type: string }
+              level: { $ref: "#/components/schemas/TrustLevel" }
+        abstention:
+          type: [object, "null"]
+          required: [reason, proposedCheck, minutes]
+          properties:
+            reason: { type: string }
+            proposedCheck: { type: string }
+            minutes: { type: integer }
+        outcome:
+          type: [object, "null"]
+          required: [text]
+          properties: { text: { type: string } }
+        workOrderId: { type: [string, "null"] }
+        approvalId: { type: [string, "null"] }
+        timeline:
+          type: array
+          items:
+            type: object
+            required: [step, done]
+            properties: { step: { type: string }, done: { type: boolean } }
+        traceId: { type: string }
+    Approval:
+      type: object
+      required: [id, workOrderId, incidentId, title, assetName, isDraft, tier, requiredRole, rationale, ruleIds, policyVersion, expiresAt, status, evidenceSummary, canDecide]
+      properties:
+        id: { type: string }
+        workOrderId: { type: string }
+        incidentId: { type: string }
+        title: { type: string }
+        assetName: { type: string }
+        isDraft: { type: boolean, const: true, description: "Work orders are drafts; nothing is sent to equipment (invariant 1)" }
+        tier: { type: integer, minimum: 1 }
+        requiredRole: { $ref: "#/components/schemas/Role" }
+        rationale: { type: string }
+        ruleIds: { type: array, items: { type: string } }
+        policyVersion: { type: string }
+        requestedBy: { type: string }
+        rank: { type: [integer, "null"] }
+        expiresAt: { type: string, format: date-time }
+        status: { type: string, enum: [pending, approved, rejected, escalated, expired] }
+        evidenceSummary: { type: array, items: { type: string } }
+        canDecide: { type: boolean, description: "Whether this caller may decide now" }
+        cannotDecideReason: { type: [string, "null"] }
+        decidedBy: { type: [string, "null"] }
+        decidedAt: { type: [string, "null"], format: date-time }
+        decisionReason: { type: [string, "null"] }
+        auditEventId: { type: [string, "null"] }
+    ApprovalDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [approve, reject] }
+        reason: { type: string, maxLength: 1000, description: "Required to reject" }
+    SensorSummary:
+      type: object
+      required: [id, name, assetId, assetName, stationName]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        assetId: { type: string }
+        assetName: { type: string }
+        stationName: { type: string }
+        trust: { oneOf: [ { $ref: "#/components/schemas/TrustBadge" }, { type: "null" } ], description: Full-only }
+    SensorTrust:
+      type: object
+      required: [sensor, score, level, verdict, verdictText, checks, series, history]
+      properties:
+        sensor: { $ref: "#/components/schemas/SensorSummary" }
+        meta: { type: string }
+        score: { type: [number, "null"] }
+        level: { $ref: "#/components/schemas/TrustLevel" }
+        verdict: { type: string, enum: [machine_fault, sensor_fault, undetermined, no_fault, not_scored] }
+        verdictText: { type: string }
+        sensorWorkOrderId: { type: [string, "null"], description: "Sensor work-order draft for a sensor-fault verdict (TRU-3)" }
+        checks:
+          type: array
+          items:
+            type: object
+            required: [name, status, finding]
+            properties:
+              name: { type: string }
+              score: { type: [number, "null"] }
+              status: { type: string, enum: [ok, warn, fail, not_applicable, not_running] }
+              finding: { type: string }
+        series:
+          type: object
+          required: [unit, actual, expected]
+          properties:
+            unit: { type: string }
+            actual: { type: array, items: { $ref: "#/components/schemas/Point" } }
+            expected: { type: array, items: { $ref: "#/components/schemas/Point" } }
+        history:
+          type: array
+          items:
+            type: object
+            required: [at, verdict, note]
+            properties:
+              at: { type: string, format: date-time }
+              verdict: { type: string }
+              note: { type: string }
+    Point:
+      type: object
+      required: [t, v]
+      properties: { t: { type: string, format: date-time }, v: { type: number } }
+    WorkOrderStep:
+      type: object
+      required: [no, kind, title, detail, done]
+      properties:
+        no: { type: integer }
+        kind: { type: string, enum: [confirm_asset, safety, reading, inspection, finding] }
+        title: { type: string }
+        detail: { type: string }
+        done: { type: boolean }
+        citation: { oneOf: [ { $ref: "#/components/schemas/Citation" }, { type: "null" } ] }
+        reading:
+          type: [object, "null"]
+          required: [unit, referenceRange, instrumentRange]
+          properties:
+            unit: { type: string }
+            referenceRange: { $ref: "#/components/schemas/Range" }
+            instrumentRange: { $ref: "#/components/schemas/Range" }
+            value: { type: [number, "null"] }
+        choices: { type: [array, "null"], items: { type: string } }
+        choice: { type: [string, "null"] }
+    WorkOrder:
+      type: object
+      required: [id, incidentId, title, assetName, type, status, isDraft, steps]
+      properties:
+        id: { type: string }
+        incidentId: { type: string }
+        title: { type: string }
+        assetName: { type: string }
+        type: { type: string, enum: [inspection, sensor, machine] }
+        status: { type: string, enum: [draft, pending_approval, approved, rejected, in_progress, completed] }
+        isDraft: { type: boolean, const: true }
+        approvedBy: { type: [string, "null"] }
+        approvedAt: { type: [string, "null"], format: date-time }
+        steps: { type: array, items: { $ref: "#/components/schemas/WorkOrderStep" } }
+    StepInput:
+      type: object
+      properties:
+        value: { type: number }
+        choice: { type: string }
+        done: { type: boolean }
+    MockPrincipal:
+      type: object
+      required: [principalId, displayName, role, sessionType, token]
+      properties:
+        principalId: { type: string }
+        displayName: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        sessionType: { $ref: "#/components/schemas/SessionType" }
+        token: { type: string, description: "Local-only bearer token, generated at seed time" }
+    MockTelemetry:
+      type: object
+      required: [sensorId, values]
+      properties:
+        sensorId: { type: string }
+        values: { type: array, minItems: 1, maxItems: 1000, items: { type: number }, description: Oldest first }
+        ageSeconds: { type: integer, minimum: 0, default: 1, description: Age of the newest reading }
+    MockState:
+      type: object
+      required: [fallbackLevel]
+      properties:
+        fallbackLevel: { $ref: "#/components/schemas/FallbackLevel" }
+    KnowledgeStats:
+      type: object
+      required: [totalDocuments, totalChunks, corpusSizeBytes, corpusSizeMb, totalProvenanceQueries, embeddingDimension, vectorIndex, activeModel, modelProvider, liveModel]
+      properties:
+        totalDocuments: { type: integer }
+        totalChunks: { type: integer }
+        corpusSizeBytes: { type: number }
+        corpusSizeMb: { type: string }
+        totalProvenanceQueries: { type: integer }
+        embeddingDimension: { type: integer }
+        vectorIndex: { type: string }
+        activeModel: { type: string, description: Model that would word an answer now (ADR-038) }
+        modelProvider: { type: string, enum: [local, anthropic, gemini], description: Configured narration adapter (config model.provider) }
+        liveModel: { type: boolean, description: "False when the local template answers: provider local, or no API key in the environment" }
+    DocumentStatus: { type: string, enum: [pending_review, approved, withdrawn], description: Only approved documents are retrieved (RAG-10) }
+    KnowledgeDocument:
+      type: object
+      required: [id, title, section, version, status, docType, assetId, assetName, chunkCount, effectiveDate, uploadedBy, uploadedById, uploadedAt, reviewedBy, withdrawnReason, classification, hash, cited]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        section: { type: string }
+        version: { type: string }
+        status: { $ref: "#/components/schemas/DocumentStatus" }
+        docType: { type: [string, "null"], description: Template the upload followed; null for the seeded corpus }
+        assetId: { type: [string, "null"] }
+        assetName: { type: [string, "null"] }
+        chunkCount: { type: integer }
+        effectiveDate: { type: string }
+        uploadedBy: { type: [string, "null"], description: Display name of the uploader; null for the seeded corpus }
+        uploadedById: { type: [string, "null"], description: Principal who uploaded it; that person cannot approve it (RAG-10) }
+        uploadedAt: { type: [string, "null"], format: date-time }
+        reviewedBy: { type: [string, "null"] }
+        withdrawnReason: { type: [string, "null"] }
+        classification: { type: string, enum: [public, internal, restricted] }
+        hash: { type: [string, "null"], description: SHA-256 of the indexed text }
+        cited: { type: boolean, description: "Used by an answer, incident or work order; removing it then withdraws instead of deleting (RAG-13)" }
+    TemplateSection:
+      type: object
+      required: [heading, hint]
+      properties:
+        heading: { type: string }
+        hint: { type: string }
+    KnowledgeTemplate:
+      type: object
+      required: [docType, label, sections, markdown]
+      properties:
+        docType: { type: string }
+        label: { type: string }
+        sections: { type: array, items: { $ref: "#/components/schemas/TemplateSection" } }
+        markdown: { type: string, description: Skeleton to fill in; hints are HTML comments }
+    KnowledgeEquipment:
+      type: object
+      required: [assetId, name, stationName, lineName]
+      properties:
+        assetId: { type: string }
+        name: { type: string }
+        stationName: { type: string }
+        lineName: { type: string }
+    KnowledgeTemplates:
+      type: object
+      required: [templates, equipment, rules]
+      properties:
+        templates: { type: array, items: { $ref: "#/components/schemas/KnowledgeTemplate" } }
+        equipment: { type: array, items: { $ref: "#/components/schemas/KnowledgeEquipment" } }
+        rules:
+          type: object
+          required: [maxBytes, titleMinChars, contentMinWords, reasonMinChars, requireSecondReviewer]
+          properties:
+            requireSecondReviewer: { type: boolean, description: The uploader may not approve their own document (RAG-10) }
+            maxBytes: { type: integer }
+            titleMinChars: { type: integer }
+            contentMinWords: { type: integer }
+            reasonMinChars: { type: integer }
+    DocumentChange:
+      type: object
+      required: [document, outcome, auditId]
+      properties:
+        document: { $ref: "#/components/schemas/KnowledgeDocument" }
+        outcome: { type: string, enum: [pending_review, approved, withdrawn, deleted] }
+        auditId: { type: string }
+        chunks: { type: integer, description: "Chunks indexed, on upload" }
+    DocumentRemoval:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, description: Kept in the audit log }
+    SampleDocument:
+      type: object
+      required: [title, docType, assetId, version, effectiveFrom, content]
+      properties:
+        title: { type: string }
+        docType: { type: string }
+        assetId: { type: string }
+        version: { type: string }
+        effectiveFrom: { type: string, format: date }
+        content: { type: string }
+    RAGQueryRequest:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string }
+        top_k: { type: integer, minimum: 1, description: Omit to use config knowledge.retrieval.top_k }
+        min_score: { type: number, minimum: 0, maximum: 1, description: Omit to use config knowledge.retrieval.min_score }
+    RAGQueryResponse:
+      type: object
+      required: [question, answer, model, fallback, fallback_reason, retrieved_chunks, citation_handles, citations_verified, latency_ms]
+      properties:
+        question: { type: string }
+        answer: { type: string }
+        model: { type: string }
+        fallback: { type: boolean }
+        fallback_reason: { type: [string, "null"], enum: [provider_local, restricted_data, degraded_level, no_evidence, no_api_key, provider_error, empty_answer, null], description: Why the local template answered (ADR-038) }
+        retrieved_chunks: { type: array, items: { type: object } }
+        citation_handles: { type: array, items: { type: string } }
+        citations_verified: { type: boolean }
+        latency_ms: { type: number }
+    DocumentUploadRequest:
+      type: object
+      required: [title, docType, assetId, version, effectiveFrom, content]
+      properties:
+        title: { type: string }
+        docType: { type: string, description: A key of config knowledge.templates }
+        assetId: { type: string, description: Registered equipment of the caller's tenant }
+        version: { type: string }
+        effectiveFrom: { type: string, format: date }
+        content: { type: string, description: Markdown with every section the template requires }
+        classification: { type: string, enum: [public, internal, restricted], description: "Omitted means internal. Restricted text is never sent to a cloud model (ADR-038)" }

@@ -1,0 +1,207 @@
+<title>AuraPrime FactoryPulse Agent Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an incident journey ribbon, a shared-state workspace, then full-width planes. Scrolls sideways on phones. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50;
+  --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --blue-f:#1b2f4d; --blue-s:#5b8fd9; --green-f:#173a22; --green-s:#4aa35a;
+  --amber-f:#4a3615; --amber-s:#d9a03f; --grey-f:#252c33; --grey-s:#6b7681;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --blue-f:#1b2f4d; --blue-s:#5b8fd9; --green-f:#173a22; --green-s:#4aa35a;
+  --amber-f:#4a3615; --amber-s:#d9a03f; --grey-f:#252c33; --grey-s:#6b7681;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:28px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:70ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-grey{background:var(--grey-f);border-color:var(--grey-s)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:980px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:12px}
+svg .id{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg rect,svg path.cyl{stroke-width:1.5}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.c-blue{fill:var(--card);stroke:var(--blue-s)}
+.c-green{fill:var(--card);stroke:var(--green-s)}
+.c-amber{fill:var(--card);stroke:var(--amber-s)}
+.c-grey{fill:var(--card);stroke:var(--grey-s)}
+.ln{stroke:var(--arrow);stroke-width:1.5;fill:none}
+.dash{stroke-dasharray:5 4}
+.brk{stroke:var(--teal);stroke-width:1.5;fill:none}
+h2{font-size:1.05rem;font-weight:600;margin:0 0 10px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.notes div{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 16px}
+.notes h3{font-size:14px;margin:0 0 6px;font-weight:600}
+.notes p{margin:0;color:var(--muted);font-size:14px}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Agent Architecture</h1>
+  <p>How one incident travels from a machine to a verified fix. The real-time path never depends on a model, agents cooperate through one shared incident record, and every action is advisory, approved by a person and audited.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-blue"></i>Platform and control</span>
+  <span><i class="sw-green"></i>Agents, tools and AI services</span>
+  <span><i class="sw-amber"></i>Models</span>
+  <span><i class="sw-grey"></i>Plant data and external systems</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 1200 760" role="img" aria-label="AuraPrime FactoryPulse architecture: an eight-step incident journey, an agent workspace where four role agents share one incident record under a deterministic orchestrator, and four planes for security, models, observability and the external boundary.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+
+  <!-- 1. journey -->
+  <text class="lbl" x="20" y="22">1 · INCIDENT JOURNEY</text>
+
+  <rect class="grey" x="20" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="82" y="62">Plant floor</text><text class="s" x="82" y="80">machines · sensors</text>
+  <rect class="blue" x="168" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="230" y="62">Edge agent †</text><text class="s" x="230" y="80">buffer · MQTT</text><text class="id" x="230" y="96">APP-01 · Mosquitto</text>
+  <rect class="blue" x="316" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="378" y="62">Detect · trust</text><text class="s" x="378" y="80">Kafka · drift</text><text class="id" x="378" y="96">APP-02 to 04</text>
+  <rect class="blue" x="464" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="526" y="62">Line impact</text><text class="s" x="526" y="80">station graph</text><text class="id" x="526" y="96">APP-06</text>
+  <rect class="green" x="612" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="674" y="62">Diagnose</text><text class="s" x="674" y="80">agent workspace</text><text class="id" x="674" y="96">LLM path</text>
+  <rect class="blue" x="760" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="822" y="62">Approve</text><text class="s" x="822" y="80">person · policy tier</text><text class="id" x="822" y="96">APP-10</text>
+  <rect class="green" x="908" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="970" y="62">Act</text><text class="s" x="970" y="80">draft work order</text><text class="id" x="970" y="96">APP-11</text>
+  <rect class="blue" x="1056" y="34" width="124" height="70" rx="5"/>
+  <text class="t" x="1118" y="62">Verify · learn</text><text class="s" x="1118" y="80">closure · priors</text><text class="id" x="1118" y="96">APP-12</text>
+  <path class="ln" d="M144 69H168M292 69H316M440 69H464M588 69H612M736 69H760M884 69H908M1032 69H1056" marker-end="url(#ah)"/>
+
+  <path class="brk" d="M168 114V120H588V114"/>
+  <text class="cap" x="378" y="138">real-time path · Kafka · no LLM · 5 s p95</text>
+  <path class="brk" d="M760 114V120H1180V114"/>
+  <text class="cap" x="970" y="138">human-governed · every action audited</text>
+  <path class="ln dash" d="M674 104V230" marker-end="url(#ah)"/>
+  <text class="cap" x="684" y="176" style="text-anchor:start">opens the incident</text>
+
+  <!-- 2. workspace -->
+  <text class="lbl" x="20" y="208">2 · AGENT WORKSPACE · ROLES SHARE ONE INCIDENT RECORD</text>
+
+  <rect class="green" x="60" y="230" width="250" height="64" rx="5"/>
+  <text class="t" x="185" y="252">Diagnosis</text><text class="s" x="185" y="270">reads signals · writes hypotheses</text><text class="id" x="185" y="286">read-only tools</text>
+  <rect class="green" x="60" y="346" width="250" height="64" rx="5"/>
+  <text class="t" x="185" y="368">Knowledge</text><text class="s" x="185" y="386">reads manuals · writes citations</text><text class="id" x="185" y="402">read-only tools</text>
+  <rect class="green" x="890" y="230" width="250" height="64" rx="5"/>
+  <text class="t" x="1015" y="252">Line impact</text><text class="s" x="1015" y="270">reads graph · writes impact</text><text class="id" x="1015" y="286">read-only tools</text>
+  <rect class="green" x="890" y="346" width="250" height="64" rx="5"/>
+  <text class="t" x="1015" y="368">Work order</text><text class="s" x="1015" y="386">reads decisions · drafts orders</text><text class="id" x="1015" y="402">draft-only tools</text>
+
+  <rect class="blue" x="450" y="230" width="300" height="180" rx="6"/>
+  <text class="t" x="600" y="262">Incident state</text>
+  <text class="s" x="600" y="282">one typed record per incident</text>
+  <text class="s" x="600" y="312">evidence ledger · hypotheses</text>
+  <text class="s" x="600" y="330">impact · decisions · citations</text>
+  <text class="s" x="600" y="360">versioned · audited · resumable</text>
+  <text class="id" x="600" y="394">PostgreSQL · shared state, not messages</text>
+
+  <path class="ln" d="M310 262H450M310 378H450M890 262H750M890 378H750" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <rect class="green" x="60" y="440" width="1080" height="50" rx="5"/>
+  <text class="t" x="600" y="462">Orchestrator · deterministic state machine · budgets · pauses for human approval</text>
+  <text class="s" x="600" y="480">the causal engine decides, the LLM only narrates · APP-09</text>
+  <path class="ln" d="M600 440V410" marker-end="url(#ah)"/>
+
+  <!-- 3. planes -->
+  <text class="lbl" x="20" y="522">3 · PLANES EVERY STEP RUNS ON</text>
+
+  <rect class="blue" x="20" y="536" width="200" height="44" rx="5"/><text class="t" x="120" y="563">Security and governance</text>
+  <rect class="c-blue" x="236" y="536" width="179" height="44" rx="5"/><text class="s" x="325.5" y="563">Edge control chain</text>
+  <rect class="c-blue" x="425" y="536" width="179" height="44" rx="5"/><text class="s" x="514.5" y="563">Identity (OIDC) †</text>
+  <rect class="c-blue" x="614" y="536" width="179" height="44" rx="5"/><text class="s" x="703.5" y="563">Policy engine</text>
+  <rect class="c-blue" x="803" y="536" width="179" height="44" rx="5"/><text class="s" x="892.5" y="563">Redaction, 3 boundaries</text>
+  <rect class="c-blue" x="992" y="536" width="179" height="44" rx="5"/><text class="s" x="1081.5" y="563">Hash-chained audit</text>
+
+  <rect class="amber" x="20" y="588" width="200" height="44" rx="5"/><text class="t" x="120" y="615">Models</text>
+  <rect class="c-amber" x="236" y="588" width="230" height="44" rx="5"/><text class="s" x="351" y="615">Model Gateway</text>
+  <rect class="c-amber" x="476" y="588" width="230" height="44" rx="5"/><text class="s" x="591" y="615">Local: restricted data</text>
+  <rect class="c-amber" x="716" y="588" width="230" height="44" rx="5"/><text class="s" x="831" y="615">Paid: unrestricted only</text>
+  <rect class="c-amber" x="956" y="588" width="214" height="44" rx="5"/><text class="s" x="1063" y="615">Budget breaker · L0 to L5</text>
+
+  <rect class="green" x="20" y="640" width="200" height="44" rx="5"/><text class="t" x="120" y="667">Observability and quality</text>
+  <rect class="c-green" x="236" y="640" width="230" height="44" rx="5"/><text class="s" x="351" y="667">OpenTelemetry plane</text>
+  <rect class="c-green" x="476" y="640" width="230" height="44" rx="5"/><text class="s" x="591" y="667">Agent evaluation suite</text>
+  <rect class="c-green" x="716" y="640" width="230" height="44" rx="5"/><text class="s" x="831" y="667">Cost tracker per role</text>
+  <rect class="c-green" x="956" y="640" width="214" height="44" rx="5"/><text class="s" x="1063" y="667">Citation verification</text>
+
+  <rect class="grey" x="20" y="692" width="200" height="44" rx="5"/><text class="t" x="120" y="719">External boundary</text>
+  <rect class="c-grey" x="236" y="692" width="230" height="44" rx="5"/><text class="s" x="351" y="719">MCP server: tools out</text>
+  <rect class="c-grey" x="476" y="692" width="230" height="44" rx="5"/><text class="s" x="591" y="719">MCP client gateway: pinned</text>
+  <rect class="c-grey" x="716" y="692" width="230" height="44" rx="5"/><text class="s" x="831" y="719">A2A adapter: optional, Full</text>
+  <rect class="c-grey" x="956" y="692" width="214" height="44" rx="5"/><text class="s" x="1063" y="719">REST API and webhooks</text>
+</svg>
+</div>
+
+<section>
+  <h2>How agents talk to each other</h2>
+  <div class="notes">
+    <div><h3>Inside the workspace: shared state</h3><p>Roles never message each other. Each reads and writes its own part of the incident record, and the orchestrator decides who runs next. Every step is stored, so a diagnosis can be replayed, audited and resumed after a restart.</p></div>
+    <div><h3>To tools: MCP</h3><p>Role agents reach plant data through scoped, read-only tool servers (draft-only for work orders). Internal and external tools share one contract, so default-deny and audit apply to both.</p></div>
+    <div><h3>To outside agents: A2A, optional</h3><p>An agent-to-agent protocol appears only at the external edge, for example an OEM's own agent asking for a diagnosis. It lives in the Full edition as an adapter and is never used between internal roles.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Design decisions in this view</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Decision</th><th>Design element</th><th>Why for a factory</th></tr></thead>
+    <tbody>
+      <tr><td>ADR-021</td><td>One ordered edge control chain on desktop and cloud</td><td>Every external request is filtered before identity and policy</td></tr>
+      <tr><td>ADR-022</td><td>Redaction at inbound text, model calls and telemetry export</td><td>Process parameters, supplier names and operator identity must not leak into models or traces</td></tr>
+      <tr><td>ADR-023</td><td>Four role agents with scoped tool servers</td><td>Smaller blast radius; one governance model for internal and external tools</td></tr>
+      <tr><td>ADR-024</td><td>Agent evaluation suite gates releases</td><td>Scores tool use, routing, abstention, approval tier, injection resistance and cost per incident</td></tr>
+      <tr><td>ADR-025</td><td>Shared incident state inside; A2A only at the external boundary</td><td>Keeps decisions deterministic and auditable; avoids agent-to-agent latency and drift</td></tr>
+      <tr><td>Routing rule</td><td>Restricted data goes only to local models</td><td>Answers an OEM buyer's data-residency question</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="notes">
+  <div><h3>Deliberately constrained</h3><p>No agent can change equipment or approve its own work. Routing is deterministic, not chosen by a model.</p></div>
+  <div><h3>No chat store yet</h3><p>An operator copilot would add a conversation record later, under the same redaction and evidence rules.</p></div>
+  <div><h3>Status</h3><p>Built as TypeScript services (ADR-032) and covered by automated tests. † Target design, not in the code yet: Edge Agent (the simulator publishes to Mosquitto instead) and OIDC (local sign-in stands in). The budget breaker runs in the Model Gateway on every paid narration call. Check the current A2A specification before building the adapter.</p></div>
+</section>
+</main>

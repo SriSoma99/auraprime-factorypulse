@@ -1,0 +1,17 @@
+{
+  "name": "@fp/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "docs": "tsx scripts/generate-docs.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

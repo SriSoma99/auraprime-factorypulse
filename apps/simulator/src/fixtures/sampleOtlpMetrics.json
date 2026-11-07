@@ -1,0 +1,574 @@
+{
+  "resourceMetrics": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-01" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 5896.8,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-01-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.264,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-01-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 47.0,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-01-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-02" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 6078.3,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-02-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 1.785,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-02-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 49.1,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-02-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-03" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 5904.7,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-03-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.168,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-03-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 47.5,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-03-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-04" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 6014.1,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-04-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.091,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-04-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 48.8,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-04-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-05" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 4.2,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-05-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 0.062,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-05-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 45.4,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-05-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-06" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 5950.7,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-06-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.268,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-06-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 51.2,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-06-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-07" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 6008.6,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-07-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.031,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-07-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 50.7,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-07-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-08" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 6145.2,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-08-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 1.977,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-08-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 50.7,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-08-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-09" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 10.8,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-09-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 0.052,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-09-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 37.2,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-09-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "factory.site.id", "value": { "stringValue": "SITE-DEMO" } },
+          { "key": "factory.line.id", "value": { "stringValue": "LINE-01" } },
+          { "key": "factory.machine.id", "value": { "stringValue": "M-10" } },
+          { "key": "service.name", "value": { "stringValue": "demo-replay" } },
+          { "key": "factory.data.synthetic", "value": { "boolValue": true } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "scope": { "name": "factorypulse.replay", "version": "1" },
+          "metrics": [
+            {
+              "name": "machine.spindle.speed",
+              "unit": "{rpm}",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 6110.0,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-10-SPD" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.vibration.velocity.rms",
+              "unit": "mm/s",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 2.067,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-10-VIB" } }]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "machine.temperature",
+              "unit": "Cel",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1793869260000000000",
+                    "asDouble": 50.8,
+                    "attributes": [{ "key": "factory.sensor.id", "value": { "stringValue": "S-10-TMP" } }]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

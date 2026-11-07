@@ -1,0 +1,252 @@
+<!--
+title: Messaging architecture view
+status: draft
+edition: community
+related:
+  - ../09-messaging.md
+  - ../06-application-architecture.md
+  - ../adr/ADR-011-message-backbone.md
+-->
+<title>AuraPrime FactoryPulse Messaging Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Same visual language as application-architecture.html. Source of truth: doc/09 sections 2 to 7. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --red-f:#fbe3e1; --red-s:#c8483d; --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50; --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2; --purple-f:#ebe3f7; --purple-s:#8a6cc4;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px;margin:0}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:1000px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:11.5px;fill:var(--muted)}
+svg .id{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .ed{font-family:var(--mono);font-size:10px;font-weight:500;fill:var(--teal);text-anchor:end}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg rect{stroke-width:1.5}
+.zone{stroke-width:1.5}
+.red{fill:var(--red-f);stroke:var(--red-s)}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.purple{fill:var(--purple-f);stroke:var(--purple-s)}
+.card{fill:var(--card);stroke:var(--grey-s)}
+.dashed{stroke-dasharray:5 4}
+.ln{fill:none;stroke:var(--arrow);stroke-width:1.5}
+.ln.dash{stroke-dasharray:5 4}
+.sw-red{background:var(--red-f);border-color:var(--red-s)}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-purple{background:var(--purple-f);border-color:var(--purple-s)}
+footer{font-size:13px;color:var(--muted)}
+footer ul{margin:6px 0 0;padding-left:20px}
+.sw-grey{background:var(--grey-f);border-color:var(--grey-s)}
+svg .tp{font-family:var(--mono);font-size:12px;font-weight:500;text-anchor:start}
+svg .st{text-anchor:start}
+svg .en{text-anchor:end}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Messaging Architecture</h1>
+  <p>How a reading travels from the plant to an incident: Mosquitto at each site, the Ingest Gateway as the only bridge, Kafka as the durable backbone, and consumer groups that commit only after processing. When anything slows down, the pressure moves back towards the edge, where telemetry is buffered. Alerts are never dropped.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-grey"></i>Plant site</span>
+  <span><i class="sw-red"></i>Conduit and alert topic</span>
+  <span><i class="sw-blue"></i>Kafka backbone</span>
+  <span><i class="sw-green"></i>Consumer groups</span>
+  <span><i class="sw-amber"></i>Back-pressure chain</span>
+  <span>solid: message flow · dashed: rejected or validation</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 45 1200 660" role="img" aria-label="AuraPrime FactoryPulse messaging: edge agents publish over MQTT to a per-site Mosquitto broker; the Ingest Gateway subscribes, validates and produces to Kafka topics; consumer groups read the topics; a back-pressure chain runs from Kafka back to the edge disk buffer.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+
+  <rect class="zone grey" x="20" y="60" width="300" height="440" rx="8"/>
+  <text class="lbl" x="30" y="78">PLANT SITE · MOSQUITTO</text>
+  <text class="cap st" x="30" y="94">one broker per site · data inbound only</text>
+  <rect class="zone red" x="335" y="60" width="190" height="440" rx="8"/>
+  <text class="lbl" x="345" y="78">CONDUIT · APP-02</text>
+  <text class="cap st" x="345" y="94">the only bridge to Kafka</text>
+  <rect class="zone blue" x="540" y="60" width="330" height="440" rx="8"/>
+  <text class="lbl" x="550" y="78">KAFKA BACKBONE · KRAFT</text>
+  <text class="cap st" x="550" y="94">topics are working proposals (09 §4.1)</text>
+  <rect class="zone green" x="885" y="60" width="295" height="440" rx="8"/>
+  <text class="lbl" x="895" y="78">CONSUMER GROUPS</text>
+  <text class="cap st" x="895" y="94">at least once · commit after processing</text>
+
+  <rect class="grey dashed" x="40" y="120" width="260" height="56" rx="5"/>
+  <text class="t" x="170" y="143.5">Machines, PLCs</text>
+  <text class="s" x="170" y="160.5">OPC UA · Sparkplug B †</text>
+
+  <rect class="card" x="40" y="215" width="260" height="80" rx="5"/>
+  <text class="t" x="170" y="240">Edge Agent †</text>
+  <text class="s" x="170" y="258">disk buffer DS-05 · ordered replay</text>
+  <text class="id" x="170" y="277">APP-01 · one identity per node</text>
+  <text class="ed" x="294" y="228">C</text>
+
+  <rect class="card" x="40" y="335" width="260" height="100" rx="5"/>
+  <text class="t" x="170" y="358">Mosquitto</text>
+  <text class="s" x="170" y="376">MQTT 5 · QoS 1 · persistent sessions</text>
+  <text class="s" x="170" y="393">client certs · publish to own subtree</text>
+  <text class="id" x="170" y="420">fp/v1/&lt;tenant&gt;/&lt;site&gt;/…/telemetry</text>
+  <text class="ed" x="294" y="348">C</text>
+
+  <text class="cap" x="170" y="465">no topic carries commands</text>
+  <text class="cap" x="170" y="480">back to the plant (NFR-S4)</text>
+
+  <rect class="card" x="350" y="190" width="160" height="150" rx="5"/>
+  <text class="t" x="430" y="214">Ingest Gateway</text>
+  <text class="s" x="430" y="234">subscribe from MQTT</text>
+  <text class="s" x="430" y="251">validate envelope</text>
+  <text class="s" x="430" y="268">stamp idempotency key</text>
+  <text class="s" x="430" y="285">produce, acks=all</text>
+  <text class="s" x="430" y="302">spool if Kafka is down</text>
+  <text class="id" x="430" y="326">APP-02 · INT-01</text>
+  <text class="ed" x="504" y="203">C</text>
+
+  <rect class="card" x="350" y="370" width="160" height="60" rx="5"/>
+  <text class="t" x="430" y="393">Schema registry †</text>
+  <text class="s" x="430" y="411">Avro or Protobuf</text>
+
+  <rect class="card" x="555" y="110" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="131">tel.raw.v1</text>
+  <text class="cap en" x="845" y="131">tenant + asset</text>
+  <rect class="card" x="555" y="152" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="173">tel.features.v1</text>
+  <text class="cap en" x="845" y="173">tenant + asset</text>
+  <rect class="red" x="555" y="194" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="215">detect.alerts.v1</text>
+  <text class="cap en" x="845" y="215">tenant + asset</text>
+  <rect class="card" x="555" y="236" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="257">case.events.v1</text>
+  <text class="cap en" x="845" y="257">incident · via outbox †</text>
+  <rect class="card" x="555" y="278" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="299">gov.audit.v1</text>
+  <text class="cap en" x="845" y="299">tenant</text>
+  <rect class="card" x="555" y="320" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="341">asset.state.v1</text>
+  <text class="cap en" x="845" y="341">tenant + asset · compact</text>
+  <rect class="card" x="555" y="362" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="383">know.ingest.v1</text>
+  <text class="cap en" x="845" y="383">document</text>
+  <rect class="grey" x="555" y="404" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="425">tel.dlq.v1</text>
+  <text class="cap en" x="845" y="425">original key · reason</text>
+  <rect class="grey dashed" x="555" y="446" width="300" height="34" rx="5"/>
+  <text class="tp" x="567" y="467">*.retry.&lt;delay&gt;</text>
+  <text class="cap en" x="845" y="467">tiered, before the DLQ</text>
+
+  <rect class="card" x="900" y="110" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="125">stream-processor</text>
+  <text class="id" x="1032.5" y="139">APP-03 · tel.raw → tel.features</text>
+  <rect class="card" x="900" y="152" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="167">detection</text>
+  <text class="id" x="1032.5" y="181">APP-04 · tel.features → detect.alerts</text>
+  <rect class="card" x="900" y="194" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="209">orchestrator-trigger</text>
+  <text class="id" x="1032.5" y="223">APP-09 · alert → incident (Tier 1)</text>
+  <rect class="card" x="900" y="278" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="293">audit-sink</text>
+  <text class="id" x="1032.5" y="307">APP-20 · sole hash-chain writer</text>
+  <rect class="card dashed" x="900" y="340" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="355">trust</text>
+  <text class="id" x="1032.5" y="369">APP-05 · input topic open (OI-5)</text>
+  <rect class="card dashed" x="900" y="382" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="397">line-impact</text>
+  <text class="id" x="1032.5" y="411">APP-06 · input topic open (OI-5)</text>
+  <rect class="card dashed" x="900" y="424" width="265" height="34" rx="5"/>
+  <text class="t" x="1032.5" y="439">timeseries-sink</text>
+  <text class="id" x="1032.5" y="453">DS-01 · input topic open (OI-5)</text>
+  <text class="cap" x="1032.5" y="484">lag per group feeds APP-13</text>
+
+  <path class="ln" d="M170 176V213" marker-end="url(#ah)"/>
+  <path class="ln" d="M170 295V333" marker-end="url(#ah)"/>
+  <text class="cap st" x="178" y="318">MQTT · mTLS</text>
+  <path class="ln" d="M300 385H322V255H348" marker-end="url(#ah)"/>
+  <text class="cap" x="316" y="322" transform="rotate(-90 316 322)">subscribe</text>
+  <path class="ln" d="M510 225H532V127H553" marker-end="url(#ah)"/>
+  <text class="cap" x="430" y="182">idempotent · acks=all</text>
+  <path class="ln dash" d="M510 315H532V421H553" marker-end="url(#ah)"/>
+  <text class="cap en" x="526" y="358">rejected</text>
+  <path class="ln dash" d="M430 370V342"/>
+  <path class="ln" d="M855 127H898" marker-end="url(#ah)"/>
+  <path class="ln" d="M855 169H898" marker-end="url(#ah)"/>
+  <path class="ln" d="M855 211H898" marker-end="url(#ah)"/>
+  <path class="ln" d="M855 295H898" marker-end="url(#ah)"/>
+
+  <rect class="zone amber" x="20" y="520" width="1160" height="110" rx="8"/>
+  <text class="lbl" x="30" y="538">BACK-PRESSURE · PRESSURE MOVES TOWARDS THE EDGE</text>
+  <text class="cap st" x="30" y="554">09 §5 · loss is counted and surfaced · invariant 5: alerts are never dropped</text>
+  <rect class="card" x="35" y="566" width="206" height="50" rx="5"/>
+  <text class="t" x="138" y="586">Kafka slow or full</text>
+  <text class="s" x="138" y="603">lag metrics and alerts fire</text>
+  <rect class="card" x="265" y="566" width="206" height="50" rx="5"/>
+  <text class="t" x="368" y="586">APP-02 stops pulling</text>
+  <text class="s" x="368" y="603">or spools, returns retry-after</text>
+  <rect class="card" x="495" y="566" width="206" height="50" rx="5"/>
+  <text class="t" x="598" y="586">Mosquitto queues</text>
+  <text class="s" x="598" y="603">up to its configured limit</text>
+  <rect class="card" x="725" y="566" width="206" height="50" rx="5"/>
+  <text class="t" x="828" y="586">Edge spills to disk †</text>
+  <text class="s" x="828" y="603">DS-05 · replay in order</text>
+  <rect class="red" x="955" y="566" width="206" height="50" rx="5"/>
+  <text class="t" x="1058" y="586">Buffers exhausted</text>
+  <text class="s" x="1058" y="603">drop telemetry, never alerts</text>
+  <path class="ln" d="M241 591H263" marker-end="url(#ah)"/>
+  <path class="ln" d="M471 591H493" marker-end="url(#ah)"/>
+  <path class="ln" d="M701 591H723" marker-end="url(#ah)"/>
+  <path class="ln" d="M931 591H953" marker-end="url(#ah)"/>
+
+  <rect class="zone purple" x="20" y="645" width="1160" height="50" rx="8"/>
+  <text class="lbl" x="30" y="663">TRACE AND SECURITY</text>
+  <text class="cap st" x="30" y="681">W3C traceparent: MQTT 5 user properties → Kafka headers → consumers · Kafka internal only, mTLS or SASL/SCRAM, topic ACLs per service · redaction before export</text>
+</svg>
+</div>
+
+<footer>
+  <p>Sources: doc/09 section 2 (topology), 3 (MQTT design), 4 (topics, delivery, consumer groups), 5 (back-pressure), 6 (security) and 7 (observability). Topics are shown without the <code>fp.&lt;env&gt;</code> prefix. Partition count and retention come from the TO-2 spike.</p>
+  <ul>
+    <li>Open point (OI-5): doc/03, 05 and 06 still use the older names <code>tel.validated</code> and <code>alert.created</code>. This view follows the doc/09 catalogue.</li>
+    <li>Open point (OI-5): doc/09 does not say which topics the trust, line-impact and timeseries-sink groups read, so they are drawn dashed with no arrow.</li>
+    <li>† Target design, not in the code yet: Edge Agent and its spill to disk (the simulator publishes to Mosquitto instead), OPC UA and Sparkplug B adapters, schema registry, outbox. mTLS and SASL are also not built.</li>
+    <li>Updated 2026-11-07: OTLP/HTTP JSON also enters through APP-02 and passes the same sensor registry check as MQTT (ADR-039).</li>
+  </ul>
+</footer>
+</main>

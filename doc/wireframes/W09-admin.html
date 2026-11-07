@@ -1,0 +1,375 @@
+<!--
+title: "Wireframe W09: Admin"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../04-architecture-definition.md
+  - ../adr/ADR-012-multi-tenancy-rls.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W09 Platform Administration</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Source: 02 section 6.1 (W09 row); API-2; ADR-012 (multi-tenancy RLS). Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+
+.tabnav{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--fill)}
+.tabnav button{border:0;border-right:1px solid var(--line);background:transparent;padding:10px 18px;font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+.tabnav button.active{background:var(--paper);color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent);margin-bottom:-1px}
+.tabnav button .badge{font-size:11px;font-family:var(--mono);padding:1px 6px;border-radius:999px;background:var(--line);margin-left:6px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--fill)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:var(--fill)}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.ok{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.warn{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+
+.btn{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12px;border-width:1px}
+
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:36px}
+.callout{padding:24px;text-align:center;color:var(--muted)}
+.callout.bad{border:1px solid var(--bad-s);background:var(--bad-f);border-radius:8px;margin:14px;color:var(--ink)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W09 Platform Administration &amp; Multi-Tenancy</h1>
+    <p class="lede">
+      Tenancy isolation, user role assignments (ACT-1 to ACT-5), and resource quota allocations.
+      Enforces strict Row-Level Security (RLS) boundary across tenant partitions (ADR-012, Invariant 4).
+    </p>
+  </div>
+
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>Tab (<code>vm.tab</code>):</legend>
+      <button type="button" data-tab="tenants" aria-pressed="true">tenants</button>
+      <button type="button" data-tab="users" aria-pressed="false">users_and_roles</button>
+      <button type="button" data-tab="quotas" aria-pressed="false">resource_quotas</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="normal" aria-pressed="true">normal</button>
+      <button type="button" data-state="loading" aria-pressed="false">loading</button>
+      <button type="button" data-state="permission_denied" aria-pressed="false">permission_denied</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useAdminViewModel()</code></span>
+  </aside>
+
+  <main class="screen" id="screen" role="region" aria-label="Admin Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC DATA</span>
+      <span class="kv">Active Tenant: <b>Detroit Auto Works (tenant-01)</b></span>
+      <span class="kv">RLS Status: <b style="color:var(--ok-s)">FORCED ACTIVE</b></span>
+      <span class="sp"></span>
+      <button class="btn sm primary">+ Create Tenant / Invite User</button>
+    </header>
+
+    <nav class="tabnav" aria-label="Admin tabs">
+      <button type="button" class="active" id="btn-tab-tenants">Tenants &amp; Plants <span class="badge">3</span></button>
+      <button type="button" id="btn-tab-users">User Role Directory <span class="badge">12</span></button>
+      <button type="button" id="btn-tab-quotas">Tenant Quota Allocations <span class="badge">3</span></button>
+    </nav>
+
+    <div id="view-denied" class="callout bad" hidden>
+      <h4>403 Access Denied: Platform Administrator Privileges Required</h4>
+      <p>Tenant administration and RLS partition management are restricted to security administrators.</p>
+    </div>
+
+    <div id="view-loading" style="padding:14px" hidden>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+    </div>
+
+    <!-- Tab 1: Tenants -->
+    <div id="content-tenants">
+      <table class="tbl" aria-label="Tenants table">
+        <thead>
+          <tr>
+            <th>Tenant Name &amp; ID</th>
+            <th>Primary Plant Site</th>
+            <th>Active Lines / Assets</th>
+            <th>Isolation Mode</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Detroit Auto Works</b><br><span class="mono kv">tenant-01</span></td>
+            <td>Plant A (Body Shop)</td>
+            <td>4 lines &bull; 28 assets</td>
+            <td><span class="status-badge ok">RLS SHARED SCHEMA</span></td>
+            <td class="mono kv">2026-09-01</td>
+            <td><button class="btn sm">Manage Site</button></td>
+          </tr>
+          <tr>
+            <td><b>Midwest Metal Stampers</b><br><span class="mono kv">tenant-02</span></td>
+            <td>Plant B (Press Stamping)</td>
+            <td>2 lines &bull; 14 assets</td>
+            <td><span class="status-badge ok">RLS SHARED SCHEMA</span></td>
+            <td class="mono kv">2026-09-15</td>
+            <td><button class="btn sm">Manage Site</button></td>
+          </tr>
+          <tr>
+            <td><b>Aerospace Composite Cell</b><br><span class="mono kv">tenant-03</span></td>
+            <td>Plant C (Clean Room)</td>
+            <td>1 line &bull; 6 assets</td>
+            <td><span class="status-badge ok">RLS SHARED SCHEMA</span></td>
+            <td class="mono kv">2026-10-01</td>
+            <td><button class="btn sm">Manage Site</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 2: Users & Roles -->
+    <div id="content-users" hidden>
+      <table class="tbl" aria-label="Users and roles table">
+        <thead>
+          <tr>
+            <th>User &amp; Email</th>
+            <th>Assigned Role</th>
+            <th>Approval Authority</th>
+            <th>Device Binding</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Sri Soma</b><br><span class="kv mono">soma@example.com</span></td>
+            <td><span class="chip">ACT-4 Reliability Engineer</span></td>
+            <td>Tier 1 &amp; Tier 2 Approver</td>
+            <td>Hardware FIDO2 Token</td>
+            <td><span class="status-badge ok">ACTIVE</span></td>
+            <td><button class="btn sm">Edit Role</button></td>
+          </tr>
+          <tr>
+            <td><b>Marcus Vance</b><br><span class="kv mono">vance@example.com</span></td>
+            <td><span class="chip">ACT-3 Shift Lead</span></td>
+            <td>Tier 1 Approver Only</td>
+            <td>Company iPhone (M03)</td>
+            <td><span class="status-badge ok">ACTIVE</span></td>
+            <td><button class="btn sm">Edit Role</button></td>
+          </tr>
+          <tr>
+            <td><b>Elena Rostova</b><br><span class="kv mono">rostova@example.com</span></td>
+            <td><span class="chip">ACT-2 Maintenance Tech</span></td>
+            <td>Checklist Capture (M04)</td>
+            <td>Rugged Android Tablet</td>
+            <td><span class="status-badge ok">ACTIVE</span></td>
+            <td><button class="btn sm">Edit Role</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 3: Resource Quotas -->
+    <div id="content-quotas" hidden>
+      <table class="tbl" aria-label="Quotas table">
+        <thead>
+          <tr>
+            <th>Tenant</th>
+            <th>Telemetry Ingest Limit</th>
+            <th>LLM Token Allocation / Mo</th>
+            <th>Storage Quota</th>
+            <th>Current Usage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Detroit Auto Works</b></td>
+            <td class="mono">5,000 msg/s</td>
+            <td class="mono">2,000,000 tokens</td>
+            <td class="mono">50 GB</td>
+            <td><span class="status-badge ok">NOMINAL (28%)</span></td>
+          </tr>
+          <tr>
+            <td><b>Midwest Metal Stampers</b></td>
+            <td class="mono">2,500 msg/s</td>
+            <td class="mono">1,000,000 tokens</td>
+            <td class="mono">25 GB</td>
+            <td><span class="status-badge ok">NOMINAL (14%)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="footerbar">
+      <span>Tenancy Security: PostgreSQL Row-Level Security <code>tenant_id = current_setting('app.tenant_id')</code></span>
+      <span><a href="#">Export Audit Log (APP-20)</a> &bull; <a href="#">Runbook RB-10: Cross-Tenant Isolation</a></span>
+    </footer>
+
+    <section class="card" aria-label="Amendment ADR-040" style="margin-top:14px;padding:12px;border:1px dashed var(--line);border-radius:8px">
+      <h3 style="margin:0 0 6px">Amendment 2026-11-05 (ADR-040): users, roles and screen access</h3>
+      <ul style="margin:0;padding-left:18px;font-size:14px">
+        <li><b>Users and roles.</b> One row per user of the tenant with a role picker. Disabled for your own row ("another admin must change it") and for API keys and agent tokens ("keep their issued role").</li>
+        <li><b>Screen access by role.</b> Pick a role, then set each screen to Hidden, View or Use. Each row shows the config default, a "changed" chip when overridden, and Reset. The admin role's Admin row is locked.</li>
+        <li>Every change shows its audit reference (AUD-…) and applies on the user's next request. The API enforces the same rules. Approval tiers are not editable here (policy.role_max_tier, invariant 2).</li>
+        <li>States: loading, error, view only (actions disabled), permission denied (route redirects to the first permitted screen). The default matrix is in 02 section 4.4.</li>
+      </ul>
+    </section>
+  </main>
+
+  <ul class="notes">
+    <li><b>ADR-012 &amp; Invariant 4:</b> Every query and event enforces mandatory <code>tenant_id</code> isolation via database RLS.</li>
+    <li><b>Role Architecture:</b> Enforces separation between ACT-2 (technician checklist execution), ACT-3 (tier-1 approval), and ACT-4 (tier-2 RCA engineering sign-off).</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const tabTenants = document.getElementById('btn-tab-tenants');
+  const tabUsers = document.getElementById('btn-tab-users');
+  const tabQuotas = document.getElementById('btn-tab-quotas');
+
+  const contentTenants = document.getElementById('content-tenants');
+  const contentUsers = document.getElementById('content-users');
+  const contentQuotas = document.getElementById('content-quotas');
+
+  const viewLoading = document.getElementById('view-loading');
+  const viewDenied = document.getElementById('view-denied');
+
+  let currentTab = 'tenants';
+  let state = 'normal';
+
+  function render(){
+    contentTenants.hidden = true;
+    contentUsers.hidden = true;
+    contentQuotas.hidden = true;
+    viewLoading.hidden = true;
+    viewDenied.hidden = true;
+
+    [tabTenants, tabUsers, tabQuotas].forEach(b => b.className = '');
+
+    if (state === 'loading') {
+      viewLoading.hidden = false;
+      return;
+    }
+    if (state === 'permission_denied') {
+      viewDenied.hidden = false;
+      return;
+    }
+
+    if (currentTab === 'tenants') {
+      contentTenants.hidden = false;
+      tabTenants.className = 'active';
+    } else if (currentTab === 'users') {
+      contentUsers.hidden = false;
+      tabUsers.className = 'active';
+    } else if (currentTab === 'quotas') {
+      contentQuotas.hidden = false;
+      tabQuotas.className = 'active';
+    }
+  }
+
+  document.querySelectorAll('.controls button[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      currentTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state = btn.dataset.state;
+      render();
+    });
+  });
+
+  [tabTenants, tabUsers, tabQuotas].forEach(t => {
+    t.addEventListener('click', () => {
+      if (t === tabTenants) currentTab = 'tenants';
+      if (t === tabUsers) currentTab = 'users';
+      if (t === tabQuotas) currentTab = 'quotas';
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => {
+        b.setAttribute('aria-pressed', b.dataset.tab === currentTab ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

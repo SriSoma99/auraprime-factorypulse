@@ -1,0 +1,9 @@
+{
+  "name": "@fp/demo-tools",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Offline narration and video assembly for the hero demo. Not part of the pnpm workspace, so the main install stays light.",
+  "dependencies": {
+    "sherpa-onnx-node": "1.13.8"
+  }
+}

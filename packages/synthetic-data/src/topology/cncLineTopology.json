@@ -1,0 +1,1763 @@
+{
+  "template_version": "1.0",
+  "is_synthetic": true,
+  "site": {
+    "site_id": "SITE-DEMO",
+    "name": "Demo Plant",
+    "timezone": "Asia/Kolkata",
+    "areas": [
+      {
+        "area_id": "AREA-MACH",
+        "name": "Machining"
+      }
+    ]
+  },
+  "lines": [
+    {
+      "line_id": "LINE-01",
+      "name": "Demo machining line",
+      "area_id": "AREA-MACH",
+      "takt_time_s": 45,
+      "nominal_throughput_per_h": 80,
+      "stations": [
+        {
+          "station_id": "ST-01",
+          "name": "Operation 10",
+          "position": 1,
+          "operation": "Machining operation 1",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-01",
+              "name": "Machining centre 1",
+              "plant_tag": "MC-01",
+              "equipment_type": "cnc_mill",
+              "criticality": "b_degraded_output",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-01-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-01-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-01-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-01-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-01-VIB",
+                    "S-01-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-01-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-01-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-01-SPD",
+                    "S-01-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-01-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-01-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-01-SPD",
+                    "S-01-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-02",
+          "name": "Operation 20",
+          "position": 2,
+          "operation": "Machining operation 2",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-02",
+              "name": "Machining centre 2",
+              "plant_tag": "MC-02",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-02-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-02-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-02-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-02-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-02-VIB",
+                    "S-02-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-02-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-02-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-02-SPD",
+                    "S-02-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-02-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-02-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-02-SPD",
+                    "S-02-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-03",
+          "name": "Operation 30",
+          "position": 3,
+          "operation": "Machining operation 3",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-03",
+              "name": "Machining centre 3",
+              "plant_tag": "MC-03",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-03-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-03-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-03-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-03-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-03-VIB",
+                    "S-03-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-03-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-03-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-03-SPD",
+                    "S-03-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-03-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-03-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-03-SPD",
+                    "S-03-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-04",
+          "name": "Operation 40",
+          "position": 4,
+          "operation": "Machining operation 4",
+          "cycle_time_s": 43,
+          "is_bottleneck": true,
+          "machines": [
+            {
+              "machine_id": "M-04",
+              "name": "Machining centre 4",
+              "plant_tag": "MC-04",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-04-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-04-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-04-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-04-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-04-VIB",
+                    "S-04-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-04-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-04-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-04-SPD",
+                    "S-04-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-04-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-04-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-04-SPD",
+                    "S-04-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-05",
+          "name": "Operation 50",
+          "position": 5,
+          "operation": "Machining operation 5",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-05",
+              "name": "Machining centre 5",
+              "plant_tag": "MC-05",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-05-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-05-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-05-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-05-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-05-VIB",
+                    "S-05-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-05-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-05-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-05-SPD",
+                    "S-05-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-05-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-05-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-05-SPD",
+                    "S-05-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-06",
+          "name": "Operation 60",
+          "position": 6,
+          "operation": "Machining operation 6",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-06",
+              "name": "Machining centre 6",
+              "plant_tag": "MC-06",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-06-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-06-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-06-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-06-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-06-VIB",
+                    "S-06-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-06-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-06-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-06-SPD",
+                    "S-06-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-06-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-06-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-06-SPD",
+                    "S-06-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-07",
+          "name": "Operation 70",
+          "position": 7,
+          "operation": "Machining operation 7",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-07",
+              "name": "Machining centre 7",
+              "plant_tag": "MC-07",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-07-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-07-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-07-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-07-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-07-VIB",
+                    "S-07-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-07-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-07-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-07-SPD",
+                    "S-07-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-07-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-07-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-07-SPD",
+                    "S-07-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-08",
+          "name": "Operation 80",
+          "position": 8,
+          "operation": "Machining operation 8",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-08",
+              "name": "Machining centre 8",
+              "plant_tag": "MC-08",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-08-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-08-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-08-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-08-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-08-VIB",
+                    "S-08-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-08-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-08-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-08-SPD",
+                    "S-08-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-08-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-08-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-08-SPD",
+                    "S-08-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-09",
+          "name": "Operation 90",
+          "position": 9,
+          "operation": "Machining operation 9",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-09",
+              "name": "Machining centre 9",
+              "plant_tag": "MC-09",
+              "equipment_type": "cnc_mill",
+              "criticality": "a_line_stopping",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-09-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-09-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-09-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-09-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-09-VIB",
+                    "S-09-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-09-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-09-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-09-SPD",
+                    "S-09-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-09-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-09-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-09-SPD",
+                    "S-09-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "station_id": "ST-10",
+          "name": "Operation 100",
+          "position": 10,
+          "operation": "Machining operation 10",
+          "cycle_time_s": 40,
+          "is_bottleneck": false,
+          "machines": [
+            {
+              "machine_id": "M-10",
+              "name": "Machining centre 10",
+              "plant_tag": "MC-10",
+              "equipment_type": "cnc_mill",
+              "criticality": "b_degraded_output",
+              "manufacturer": "Example OEM",
+              "model": "VMC-850",
+              "operating_profile": {
+                "modes": [
+                  "run",
+                  "idle",
+                  "off"
+                ],
+                "duty": "cyclic",
+                "rated_speed": 8000,
+                "rated_speed_unit": "rpm",
+                "mode_rules": {
+                  "signal_ref": "S-10-SPD",
+                  "run_at_or_above": 1000,
+                  "idle_at_or_above": 100,
+                  "stopped_below": 100,
+                  "min_state_duration_s": 30
+                }
+              },
+              "components": [
+                {
+                  "component_id": "C-10-SPN",
+                  "name": "Main spindle",
+                  "component_type": "spindle",
+                  "failure_modes": [
+                    "bearing_wear",
+                    "overheating",
+                    "imbalance"
+                  ]
+                }
+              ],
+              "maintenance": {
+                "strategy": "condition_based"
+              },
+              "document_refs": [
+                "SOP spindle bearing inspection",
+                "SOP spindle overheating response"
+              ],
+              "sensors": [
+                {
+                  "sensor_id": "S-10-SPD",
+                  "name": "Spindle speed",
+                  "sensor_type": "proximity_speed",
+                  "measurand": "speed",
+                  "unit": "rpm",
+                  "component_ref": "C-10-SPN",
+                  "mount": "Tachometer on spindle",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 12000
+                  },
+                  "normal_range": {
+                    "min": 5500,
+                    "max": 6500
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.spindle.speed",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-10-VIB",
+                    "S-10-TMP"
+                  ]
+                },
+                {
+                  "sensor_id": "S-10-VIB",
+                  "name": "Spindle vibration (RMS velocity)",
+                  "sensor_type": "accelerometer",
+                  "measurand": "vibration_rms",
+                  "unit": "mm/s",
+                  "component_ref": "C-10-SPN",
+                  "mount": "Spindle housing, drive end, radial",
+                  "instrument_range": {
+                    "min": 0,
+                    "max": 50
+                  },
+                  "normal_range": {
+                    "min": 0.5,
+                    "max": 4.5
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.vibration.velocity.rms",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-10-SPD",
+                    "S-10-TMP"
+                  ],
+                  "limits": {
+                    "warn_high": 4.5,
+                    "alarm_high": 7.1,
+                    "source": "OEM manual, verify"
+                  }
+                },
+                {
+                  "sensor_id": "S-10-TMP",
+                  "name": "Spindle bearing temperature",
+                  "sensor_type": "rtd_temperature",
+                  "measurand": "temperature",
+                  "unit": "degC",
+                  "component_ref": "C-10-SPN",
+                  "mount": "Front bearing cap",
+                  "instrument_range": {
+                    "min": -50,
+                    "max": 200
+                  },
+                  "normal_range": {
+                    "min": 25,
+                    "max": 65
+                  },
+                  "sampling": {
+                    "rate_hz": 1,
+                    "mode": "periodic",
+                    "max_silence_s": 10
+                  },
+                  "source": {
+                    "protocol": "otlp_http",
+                    "address": "machine.temperature",
+                    "payload_format": "otlp_metrics",
+                    "timestamp_format": "unix_nano",
+                    "scale": 1,
+                    "offset": 0
+                  },
+                  "related_sensor_refs": [
+                    "S-10-SPD",
+                    "S-10-VIB"
+                  ],
+                  "limits": {
+                    "warn_high": 70,
+                    "alarm_high": 80,
+                    "source": "OEM manual, verify"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "from": "ST-01",
+          "to": "ST-02",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-02",
+          "to": "ST-03",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-03",
+          "to": "ST-04",
+          "buffer_minutes": null
+        },
+        {
+          "from": "ST-04",
+          "to": "ST-05",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-05",
+          "to": "ST-06",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-06",
+          "to": "ST-07",
+          "buffer_minutes": null
+        },
+        {
+          "from": "ST-07",
+          "to": "ST-08",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-08",
+          "to": "ST-09",
+          "buffer_minutes": 4
+        },
+        {
+          "from": "ST-09",
+          "to": "ST-10",
+          "buffer_minutes": null
+        }
+      ]
+    }
+  ]
+}

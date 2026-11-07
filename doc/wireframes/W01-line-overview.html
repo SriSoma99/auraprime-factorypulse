@@ -1,0 +1,295 @@
+<!--
+title: "Wireframe W01: Line overview"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W01 Line Overview</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.1 (W01 row), 7.2, 7.4, 10, 14. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+.layout{display:grid;grid-template-columns:1fr 300px}
+.mapcol{padding:14px;border-right:1px solid var(--line);min-width:0}
+.rail{padding:14px}
+.mapcol h2,.rail h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.map{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.map text{font-family:var(--sans);font-size:13px;fill:var(--ink);text-anchor:middle}
+.map .m{font-size:11px;fill:var(--muted)}
+.map .mono{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.map .st{fill:var(--paper);stroke:var(--muted);stroke-width:1.5}
+.map .st.alert{stroke:var(--bad-s);stroke-width:2.5}
+.map .st.unknown{stroke-dasharray:5 4}
+.map .flow{stroke:var(--muted);stroke-width:2;fill:none}
+.map .cascade{stroke:var(--bad-s);stroke-width:3;fill:none;stroke-dasharray:8 5}
+.map .buf{fill:var(--fill);stroke:var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.detail{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.detail div{font-size:12.5px;color:var(--muted)} .detail b{display:block;font-size:15px;color:var(--ink)}
+.q{list-style:none;margin:0;padding:0}
+.q li{border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:8px;font-size:14px}
+.q li.top{border-width:2px;border-color:var(--ink)}
+.q .r{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.q .meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.imp{font-family:var(--mono);font-size:12.5px}
+.imp.high::before{content:"▲▲ "} .imp.med::before{content:"▲ "} .imp.low::before{content:"△ "}
+.imp.basic{border:1px dashed var(--warn-s);padding:0 4px;border-radius:4px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);text-transform:none;letter-spacing:0}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok-s)}
+.live.paused{border-color:var(--warn-s);background:var(--warn-f);color:var(--ink)}
+.live.paused::before{background:transparent;border:2px solid var(--warn-s);width:5px;height:5px}
+.stations{width:100%;border-collapse:collapse;font-size:14px}
+.stations th{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.stations td{padding:8px;border-bottom:1px solid var(--line)}
+.edition{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--muted);margin-top:12px}
+.empty{padding:16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .mapcol{border-right:0;border-bottom:1px solid var(--line)}
+  .detail{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>W01 Line overview · wireframe</h1>
+    <p class="lede">See where the line is constrained and how an alert would spread downstream, with the alerts ranked by line impact beside the map. Low fidelity, synthetic data; states are named as the ViewModel exposes them (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>State</legend>
+      <button data-v="loading">loading</button><button data-v="live">live</button><button data-v="noAlerts">no alerts</button><button data-v="impactUnknown">impact unknown</button><button data-v="stale">stale</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L1">L1</button><button data-v="L2">L2</button><button data-v="L3">L3</button><button data-v="L4">L4</button><button data-v="L5">L5</button>
+    </fieldset>
+    <fieldset id="c-edition"><legend>Edition</legend>
+      <button data-v="full">Full</button><button data-v="community">Community</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <section class="screen" aria-label="Line overview screen">
+    <div class="topbar">
+      <span class="chip" id="lvlchip">L0 Normal</span>
+      <span class="chip syn">SYNTHETIC DATA</span>
+      <span class="sp"></span>
+      <span>Tenant: Demo</span><span>Site: Plant A</span>
+      <select class="chip" aria-label="Line" style="font:inherit;font-size:12px;color:var(--ink)"><option>Body line 1</option></select>
+      <span>Operations manager · signed in</span>
+    </div>
+    <div class="banner" id="banner" role="status"></div>
+
+    <div data-states="loading" style="padding:14px"><div class="skel" style="width:25%"></div><div class="skel l" style="height:220px"></div><div class="skel"></div></div>
+
+    <div class="layout" data-states="live noAlerts impactUnknown stale">
+      <div class="mapcol">
+        <!-- Full edition: line map (LIM-4) -->
+        <div data-ed="full">
+          <h2>Line map · Body line 1
+            <span class="live" data-states="live noAlerts impactUnknown">Live</span>
+            <span class="live paused" data-states="stale">Paused · last update 08:41</span>
+          </h2>
+          <svg class="map" viewBox="0 0 760 250" role="img" aria-label="Station graph: Load, Cell 3, Cell 4, Quality gate, Framing. Cell 4 is the bottleneck with an open alert; cascade to Quality gate with a 22 minute buffer.">
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/></marker></defs>
+            <path class="flow" d="M110 110H150" marker-end="url(#ah)"/>
+            <path class="flow" d="M250 110H290" marker-end="url(#ah)"/>
+            <path class="flow" d="M390 110H470" marker-end="url(#ah)"/>
+            <path class="flow" d="M570 110H610" marker-end="url(#ah)"/>
+            <rect class="buf" x="405" y="98" width="50" height="24" rx="4"/>
+            <text class="mono" x="430" y="114">22 min</text>
+            <text class="m" x="430" y="90">buffer</text>
+
+            <rect class="st" x="10" y="80" width="100" height="60" rx="6"/>
+            <text x="60" y="106">● Load</text><text class="m" x="60" y="124">58 s cycle</text>
+            <rect class="st" x="150" y="80" width="100" height="60" rx="6"/>
+            <text x="200" y="106">● Cell 3</text><text class="m" x="200" y="124">60 s cycle</text>
+            <rect class="st alert" id="c4" x="290" y="74" width="100" height="72" rx="6"/>
+            <text x="340" y="100" id="c4t">▲ Cell 4</text><text class="m" x="340" y="118">62 s cycle</text><text class="mono" x="340" y="135">INC-0042</text>
+            <rect class="st" id="qg" x="470" y="80" width="100" height="60" rx="6"/>
+            <text x="520" y="106">● Quality gate</text><text class="m" x="520" y="124">55 s cycle</text>
+            <rect class="st" x="610" y="80" width="130" height="60" rx="6"/>
+            <text x="675" y="106">● Framing</text><text class="m" x="675" y="124">57 s cycle</text>
+
+            <g id="bneck" data-states="live noAlerts stale"><path d="M340 160l8 10h-16z" style="fill:var(--ink)"/><text x="340" y="188">◆ bottleneck</text></g>
+            <g id="cascade" data-states="live stale">
+              <path class="cascade" d="M340 60V40H520V72" marker-end="url(#ah)"/>
+              <text class="m" x="430" y="32">cascade if Cell 4 slows: Quality gate starves after the buffer empties</text>
+            </g>
+            <g data-states="impactUnknown"><text class="m" x="430" y="36">impact unknown: line model unavailable, cascade not estimated</text></g>
+            <text class="m" x="380" y="232" id="maplegend">state is shown by shape and label: ● normal · ▲ alert · ◆ bottleneck · dashed outline: impact unknown</text>
+          </svg>
+          <div class="detail" aria-label="Selected station">
+            <div>Selected<b>Cell 4</b></div>
+            <div>Throughput at risk<b id="thr">−6 to −9 %</b></div>
+            <div>Reject risk<b id="rej">low</b></div>
+            <div>Buffer to next<b>22 min</b></div>
+          </div>
+        </div>
+        <!-- Community edition: no line model; stations list instead -->
+        <div data-ed="community">
+          <h2>Stations · Body line 1 <span class="live">Live</span></h2>
+          <table class="stations">
+            <thead><tr><th>Station</th><th>State</th><th>Open alerts</th><th>Last reading</th></tr></thead>
+            <tbody>
+              <tr><td>Load</td><td>● normal</td><td>0</td><td>2 s ago</td></tr>
+              <tr><td>Cell 3</td><td>● normal</td><td>1 (sensor)</td><td>2 s ago</td></tr>
+              <tr><td><b>Cell 4</b></td><td>▲ alert</td><td>3 (1 likely cause)</td><td>1 s ago</td></tr>
+              <tr><td>Quality gate</td><td>● normal</td><td>0</td><td>3 s ago</td></tr>
+              <tr><td>Framing</td><td>● normal</td><td>1</td><td>2 s ago</td></tr>
+            </tbody>
+          </table>
+          <div class="edition">The line map, bottleneck, cascade and impact ranking come from the line impact model, which is part of the Full edition (LIM-1 to LIM-4). Community shows stations and alerts without impact or lead-time estimates (DET-3 is also Full).</div>
+        </div>
+      </div>
+
+      <aside class="rail" aria-label="Alert queue">
+        <h2><span id="railtitle">Ranked by line impact</span> <a href="W02-alert-queue.html" style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--accent)">All alerts</a></h2>
+        <ul class="q" data-states="live impactUnknown stale">
+          <li class="top"><span class="r">1</span> <b>Weld Cell 4 · coolant</b><div class="meta"><span class="imp high" data-ed="full">high</span><span data-ed="full">lead 6–14 h</span><span>trust MEDIUM</span><span>incident open</span></div></li>
+          <li><span class="r">2</span> <b>Framing robot R7 · servo</b><div class="meta"><span class="imp med" data-ed="full">medium</span><span data-ed="full">lead 12–30 h</span><span>assigned</span></div></li>
+          <li><span class="r">3</span> <b>Cell 3 · pressure sensor</b><div class="meta"><span class="imp low" data-ed="full">low</span><span>trust LOW</span><span>sensor check</span></div></li>
+        </ul>
+        <div class="empty" data-states="noAlerts">No open alerts on this line. All 42 sensors reporting; last reading 2 s ago.</div>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.1 row W01 and section 7.2. Requirements: LIM-1 to LIM-4 (Full), UI-4, UI-7; acceptance criteria UI-AC-2, UI-AC-6, UI-AC-8.</p>
+    <ul>
+      <li>Full-only: the map, bottleneck, cascade and impact values load through a client port (ADR-028). The Community build renders the station list without them and must not depend on private code.</li>
+      <li>"Impact unknown" is the degraded state when the line model cannot estimate: stations show dashed outlines and no cascade is drawn. From L4 impact values are marked "basic" (03 section 13.2).</li>
+      <li>Throughput ranges are synthetic placeholders; real values come from the line model (LIM-2).</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"live",level:"L0",edition:"full"};
+const banners={L0:null,
+  L1:["warn","Reduced explanation quality: a smaller model is in use."],
+  L2:["warn","Explanations use templates. Alerts and evidence are unaffected."],
+  L3:["bad","Knowledge search unavailable: guidance is unverified and a higher approval tier is required."],
+  L4:["bad","Basic detection only (thresholds). Impact uses basic checks."],
+  L5:["bad","Offline: edge alerts only. Changes will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.toggleAttribute("hidden",!el.dataset.states.split(" ").includes(S.state)));
+  document.querySelectorAll("[data-ed]").forEach(el=>{ if(el.dataset.ed!==S.edition) el.setAttribute("hidden",""); else if(!el.dataset.states) el.removeAttribute("hidden"); });
+  const b=document.getElementById("banner"),m=banners[S.level];
+  if(m){b.className="banner "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;}else b.hidden=true;
+  document.getElementById("lvlchip").textContent=S.level==="L0"?"L0 Normal":S.level+" Degraded";
+  const unknown=S.state==="impactUnknown", basic=["L4","L5"].includes(S.level), none=S.state==="noAlerts";
+  document.querySelectorAll(".map .st").forEach(r=>r.classList.toggle("unknown",unknown));
+  document.getElementById("c4").classList.toggle("alert",!none);
+  document.getElementById("c4t").textContent=none?"● Cell 4":"▲ Cell 4";
+  document.getElementById("thr").textContent=unknown?"unknown":none?"none":"−6 to −9 %";
+  document.getElementById("rej").textContent=unknown?"unknown":"low";
+  document.querySelectorAll(".imp").forEach(e=>{
+    if(!e.dataset.t){e.dataset.t=e.textContent;e.dataset.c=e.className;}
+    e.className=unknown?"imp basic":e.dataset.c+(basic?" basic":"");
+    e.textContent=unknown?"impact unknown":basic?e.dataset.t+" · basic":e.dataset.t;});
+  document.getElementById("railtitle").textContent=S.edition==="community"?"Open alerts · newest first":unknown?"Impact unknown · newest first":"Ranked by line impact";
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.fallbackLevel = "+S.level+" · edition = "+S.edition;
+  for(const [k,id] of [["state","c-state"],["level","c-level"],["edition","c-edition"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["level","c-level"],["edition","c-edition"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;render();}));
+render();
+</script>
+</body>
+</html>

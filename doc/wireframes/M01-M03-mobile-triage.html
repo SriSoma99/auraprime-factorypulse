@@ -1,0 +1,257 @@
+<!--
+title: "Wireframe M01-M03: Mobile triage and approval"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile Triage Flow</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.2 (M01-M03), 7.3, 7.4, 12. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+.phones{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
+.phone{width:340px;max-width:100%;background:var(--paper);border:2px solid var(--muted);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;min-height:640px}
+.cap{font-size:12.5px;color:var(--note);text-align:center;margin:6px 0 0;font-family:var(--mono)}
+.status{display:flex;justify-content:space-between;padding:8px 18px 4px;font-size:12px;color:var(--muted)}
+.mtop{display:flex;align-items:center;gap:8px;padding:6px 14px 10px;border-bottom:1px solid var(--line)}
+.mtop h2{font-size:1.1rem;margin:0;flex:1}
+.mb{padding:7px 14px;font-size:13px;border-bottom:1px solid var(--line)}
+.mb.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.mb.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.mb.off{background:var(--fill);border-left:5px solid var(--muted)}
+.body{padding:12px 14px;display:grid;gap:10px;flex:1;align-content:start}
+.card{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+.card.top{border:2px solid var(--ink)}
+.card .meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);margin-top:4px}
+.imp{font-family:var(--mono);font-size:12.5px}
+.imp.high::before{content:"▲▲ "} .imp.med::before{content:"▲ "} .imp.low::before{content:"△ "}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big .btn{min-height:56px;font-size:16px;width:100%}
+textarea{font:inherit;font-size:14px;width:100%;min-height:48px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--paper);color:var(--ink)}
+.tabbar{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:8px 0 14px;font-size:12px;color:var(--muted)}
+.tabbar b{color:var(--ink)}
+details summary{cursor:pointer;color:var(--accent);font-size:13.5px}
+.q{font-size:12.5px;border:1px dashed var(--warn-s);background:var(--warn-f);border-radius:8px;padding:8px 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>M01–M03 Mobile triage and approval · wireframe</h1>
+    <p class="lede">The technician and shift-lead path on a phone: see the ranked alerts, understand one alert on a single screen, and approve or reject the proposed check with large one-handed controls. Works with a poor connection: decisions queue on the device and sync once, without duplicates. Low fidelity, synthetic data; states are named as the ViewModel exposes them (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>Approval</legend>
+      <button data-v="pending">pending</button><button data-v="queued">approved · queued</button><button data-v="synced">approved · synced</button><button data-v="expired">expired</button>
+    </fieldset>
+    <fieldset id="c-net"><legend>Network</legend>
+      <button data-v="online">online</button><button data-v="offline">offline</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L1">L1</button><button data-v="L2">L2</button><button data-v="L3">L3</button><button data-v="L4">L4</button><button data-v="L5">L5</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <div class="phones">
+    <div>
+      <section class="phone" aria-label="M01 Alerts">
+        <div class="status"><span>08:50</span><span class="netlbl">●●● 4G</span></div>
+        <div class="mtop"><h2>Alerts</h2><span class="chip syn">SYNTHETIC</span></div>
+        <div class="mb lvlb" hidden></div>
+        <div class="mb off netbar" hidden>Offline · showing alerts from 08:44. Actions will sync.</div>
+        <div class="body">
+          <div class="card top"><b>Weld Cell 4 · coolant</b><div class="meta"><span class="imp high">high</span><span>lead 6–14 h</span><span>trust ◐ MEDIUM</span></div><div class="meta"><span>3 correlated · incident open</span></div></div>
+          <div class="card"><b>Framing robot R7 · servo</b><div class="meta"><span class="imp med">medium</span><span>lead 12–30 h</span><span>assigned to you</span></div></div>
+          <div class="card"><b>Cell 3 · pressure sensor</b><div class="meta"><span class="imp low">low</span><span>trust ○ LOW</span><span>sensor check</span></div></div>
+          <div class="card"><b>Conveyor C2 · drive</b><div class="meta"><span class="imp low">low</span><span>lead 2–5 d</span></div></div>
+        </div>
+        <div class="tabbar"><b>Alerts</b><span>Approvals · <span class="pendN">1</span></span><span>Work</span><span>Sync</span></div>
+      </section>
+      <p class="cap">M01 · vm.state = list</p>
+    </div>
+
+    <div>
+      <section class="phone" aria-label="M02 Alert summary">
+        <div class="status"><span>08:50</span><span class="netlbl">●●● 4G</span></div>
+        <div class="mtop"><span>‹</span><h2>Weld Cell 4</h2><span class="chip syn">SYNTHETIC</span></div>
+        <div class="mb lvlb" hidden></div>
+        <div class="mb off netbar" hidden>Offline · last updated 08:44.</div>
+        <div class="body">
+          <div class="meta" style="display:flex;gap:10px;font-size:13px;color:var(--muted)"><span class="imp high">high impact</span><span>lead 6–14 h</span></div>
+          <div class="card"><span class="chip ai sumlbl">AI-generated</span><p style="margin:6px 0 0" class="sumtxt">Coolant flow is falling while the transformer heats up. Two causes are still possible, so no root cause is named yet.</p></div>
+          <div class="card"><b>Not enough evidence</b><p style="margin:4px 0 0">Coolant restriction 58% · flow sensor drift 34%.</p></div>
+          <div class="card"><b>Proposed check · about 10 min</b><p style="margin:4px 0 0">Portable flow reading, then strainer inspection.</p></div>
+          <details><summary>Citations (1)</summary><p style="font-size:13px;margin:6px 0 0">Weld Transformer Manual v3, section 4.2 · effective 2025-03-01</p></details>
+          <button class="btn primary" style="width:100%;min-height:52px">Review approval</button>
+        </div>
+        <div class="tabbar"><b>Alerts</b><span>Approvals · <span class="pendN">1</span></span><span>Work</span><span>Sync</span></div>
+      </section>
+      <p class="cap">M02 · vm.state = abstained</p>
+    </div>
+
+    <div>
+      <section class="phone" aria-label="M03 Approval">
+        <div class="status"><span>08:51</span><span class="netlbl">●●● 4G</span></div>
+        <div class="mtop"><span>‹</span><h2>Approve inspection?</h2></div>
+        <div class="mb lvlb" hidden></div>
+        <div class="mb off netbar" hidden>Offline · your decision is saved on this phone and sent when you reconnect.</div>
+        <div class="body">
+          <span style="font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px;justify-self:start">DRAFT · NOT SENT TO EQUIPMENT</span>
+          <div><b>Weld Cell 4 · coolant loop</b><div style="font-size:13px;color:var(--muted)" id="mtier">Tier 1 · your role can decide</div></div>
+          <div class="card"><b>Why:</b> two causes are still possible; a 10-minute check separates them. <span class="chip ai" style="margin-top:6px">AI-generated</span> <a href="#" style="color:var(--accent);font-size:13px">Evidence ›</a></div>
+          <div style="font-size:13px" id="mexp">Expires in 25 min</div>
+          <div data-states="pending">
+            <textarea aria-label="Reason" placeholder="Reason (required to reject)"></textarea>
+            <div class="big" style="margin-top:10px"><button class="btn" id="mrej">Reject</button><button class="btn primary" id="mapp">Approve</button></div>
+            <p class="why" id="mwhy"></p>
+          </div>
+          <div class="q" data-states="queued"><b>Approved · waiting to sync</b><br>Saved on this phone at 08:51 with a one-time key, so it is sent once even if you tap again or reconnect several times.</div>
+          <div class="callout ok" data-states="synced"><h4>Approved and recorded</h4>Synced 08:53 · audit event AUD-1187. The check is on the technician's list.</div>
+          <div class="callout bad" data-states="expired"><h4>Expired before you decided</h4>The incident went back to diagnosis. If you approved offline after the expiry, the server rejects it and tells you here.</div>
+        </div>
+        <div class="tabbar"><span>Alerts</span><b>Approvals · <span class="pendN">1</span></b><span>Work</span><span>Sync<span class="syncN"></span></span></div>
+      </section>
+      <p class="cap" id="m3cap">M03 · vm.state = pending</p>
+    </div>
+  </div>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.2 rows M01, M02 and M03, section 7.3 and the mobile rules in section 12. Requirements: UI-5, UI-7, UI-8, POL-4; acceptance criteria UI-AC-1, UI-AC-5, UI-AC-6, UI-AC-7, UI-AC-10.</p>
+    <ul>
+      <li>Approve and reject buttons are at least 56 px tall and sit in the thumb zone. Approval needs the signed-in person on this device; a device without a valid human session cannot approve (invariant 2).</li>
+      <li>Offline decisions carry an idempotency key and are checked by the server against expiry and tier when they sync (UI-AC-10).</li>
+      <li>At L5 the platform link is lost; only local acknowledgement is possible and approvals wait for sync (03 section 13.2).</li>
+      <li>Community vs Full: impact and lead time hide in Community, as on W01 and W02.</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"pending",net:"online",level:"L0"};
+const banners={L0:null,
+  L1:["warn","Smaller model in use: shorter explanations."],
+  L2:["warn","Template explanations. Alerts unaffected."],
+  L3:["bad","Guidance unverified · tier 2 required."],
+  L4:["bad","Basic detection only."],
+  L5:["bad","Offline: edge alerts only. Will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.hidden=!el.dataset.states.split(" ").includes(S.state));
+  const m=banners[S.level], off=S.net==="offline";
+  document.querySelectorAll(".lvlb").forEach(b=>{ if(m){b.className="mb lvlb "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;} else b.hidden=true; });
+  document.querySelectorAll(".netbar").forEach(b=>b.hidden=!off);
+  document.querySelectorAll(".netlbl").forEach(b=>b.textContent=off?"no signal":"●●● 4G");
+  const hi=["L3","L4","L5"].includes(S.level);
+  document.getElementById("mtier").textContent=hi?"Tier 2 · a reliability engineer must decide":"Tier 1 · your role can decide";
+  ["mapp","mrej"].forEach(id=>document.getElementById(id).disabled=hi);
+  document.getElementById("mwhy").textContent=hi?"Raised to tier 2 by "+S.level+". You can view but not decide.":off?"You are offline. Your decision will be queued and sent once.":"";
+  document.getElementById("mexp").textContent=S.state==="expired"?"Expired 09:16":"Expires in 25 min";
+  document.querySelectorAll(".pendN").forEach(e=>e.textContent=S.state==="pending"?"1":"0");
+  document.querySelectorAll(".syncN").forEach(e=>e.textContent=S.state==="queued"?" · 1":"");
+  const ai=S.level==="L2"||S.level==="L4"||S.level==="L5";
+  document.querySelectorAll(".sumlbl").forEach(e=>{e.textContent=ai?"Template summary":"AI-generated";e.className=ai?"chip sumlbl":"chip ai sumlbl";});
+  document.getElementById("m3cap").textContent="M03 · vm.state = "+S.state;
+  document.getElementById("vm").textContent="vm.approval = "+S.state+" · vm.network = "+S.net+" · vm.fallbackLevel = "+S.level;
+  for(const [k,id] of [["state","c-state"],["net","c-net"],["level","c-level"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["net","c-net"],["level","c-level"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;
+    if(k==="state"&&x.dataset.v==="queued")S.net="offline"; if(k==="state"&&x.dataset.v==="synced")S.net="online"; render();}));
+render();
+</script>
+</body>
+</html>

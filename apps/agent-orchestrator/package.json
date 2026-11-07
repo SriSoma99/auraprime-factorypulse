@@ -1,0 +1,33 @@
+{
+  "name": "@fp/agent-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fp/config": "workspace:*",
+    "@fp/db": "workspace:*",
+    "@fp/intel-core": "workspace:*",
+    "@fp/knowledge-svc": "workspace:*",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@fp/ingest-gateway": "workspace:*",
+    "@fp/simulator": "workspace:*",
+    "@fp/stream-processor": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,249 @@
+<!--
+title: Real-time alert path view
+status: draft
+edition: community
+related:
+  - ../03-technical-design.md
+  - ../09-messaging.md
+  - ../06-application-architecture.md
+-->
+<title>AuraPrime FactoryPulse Alert Path</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Same visual language as application-architecture.html. Source of truth: doc/03 sections 1, 3, 4.4 and 13; doc/09 section 5. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --red-f:#fbe3e1; --red-s:#c8483d; --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50; --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2; --purple-f:#ebe3f7; --purple-s:#8a6cc4;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px;margin:0}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:1000px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:11.5px;fill:var(--muted)}
+svg .id{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .ed{font-family:var(--mono);font-size:10px;font-weight:500;fill:var(--teal);text-anchor:end}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg rect{stroke-width:1.5}
+.zone{stroke-width:1.5}
+.red{fill:var(--red-f);stroke:var(--red-s)}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.purple{fill:var(--purple-f);stroke:var(--purple-s)}
+.card{fill:var(--card);stroke:var(--grey-s)}
+.dashed{stroke-dasharray:5 4}
+.ln{fill:none;stroke:var(--arrow);stroke-width:1.5}
+.ln.dash{stroke-dasharray:5 4}
+.sw-red{background:var(--red-f);border-color:var(--red-s)}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-purple{background:var(--purple-f);border-color:var(--purple-s)}
+footer{font-size:13px;color:var(--muted)}
+footer ul{margin:6px 0 0;padding-left:20px}
+.sw-grey{background:var(--grey-f);border-color:var(--grey-s)}
+svg .tp{font-family:var(--mono);font-size:12px;font-weight:500;text-anchor:start}
+svg .st{text-anchor:start}
+svg .en{text-anchor:end}
+svg .ch{font-family:var(--mono);font-size:11.5px}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Alert Path</h1>
+  <p>The Tier 0 path from a machine reading to an alert, what each stage does when it fails, and the degradation ladder. No LLM or MCP call is allowed before the alert is handed to Tier 1. Detection keeps running at every level of the ladder.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-red"></i>Tier 0 alert path · edge-only level</span>
+  <span><i class="sw-blue"></i>Tier 1 diagnosis</span>
+  <span><i class="sw-green"></i>Full service</span>
+  <span><i class="sw-amber"></i>Reduced narration or retrieval</span>
+  <span>red dashed line: invariant 6 boundary</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 45 1200 610" role="img" aria-label="AuraPrime FactoryPulse alert path: machines, edge agent, Mosquitto, ingest gateway, Kafka, stream processor and detection in Tier 0 with no LLM or MCP calls, handing detect.alerts to the agent orchestrator in Tier 1; failure behaviour per stage; and the degradation ladder from L0 healthy to L5 edge-only, with detection active at every level.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+  <rect class="zone red" x="20" y="60" width="920" height="300" rx="8"/>
+  <text class="lbl" x="30" y="78">TIER 0 · REAL-TIME ALERT PATH</text>
+  <text class="cap st" x="30" y="94">no LLM or MCP call anywhere on this path (invariant 6) · alerts are never dropped (invariant 5)</text>
+  <rect class="zone blue" x="955" y="60" width="225" height="300" rx="8"/>
+  <text class="lbl" x="965" y="78">TIER 1 · DIAGNOSIS</text>
+  <text class="cap st" x="965" y="94">starts from the alert</text>
+  <text class="cap st" x="965" y="109">may degrade, never blocks it</text>
+  <rect class="grey dashed" x="35" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="91" y="166">Machines</text>
+  <text class="s" x="91" y="183">sensors, PLCs</text>
+  <rect class="card" x="163" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="219" y="157.5">Edge Agent †</text>
+  <text class="s" x="219" y="174.5">buffer · replay</text>
+  <text class="id" x="219" y="191.5">APP-01</text>
+  <path class="ln" d="M147 170H161" marker-end="url(#ah)"/>
+  <rect class="card" x="291" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="347" y="157.5">Mosquitto</text>
+  <text class="s" x="347" y="174.5">QoS 1 · mTLS</text>
+  <text class="id" x="347" y="191.5">site broker</text>
+  <path class="ln" d="M275 170H289" marker-end="url(#ah)"/>
+  <rect class="card" x="419" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="475" y="157.5">Ingest</text>
+  <text class="s" x="475" y="174.5">validate · dedupe</text>
+  <text class="id" x="475" y="191.5">APP-02</text>
+  <path class="ln" d="M403 170H417" marker-end="url(#ah)"/>
+  <rect class="card" x="547" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="603" y="157.5">Kafka</text>
+  <text class="s" x="603" y="174.5">acks=all · DLQ</text>
+  <text class="id" x="603" y="191.5">tel.raw.v1</text>
+  <path class="ln" d="M531 170H545" marker-end="url(#ah)"/>
+  <rect class="card" x="675" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="731" y="157.5">Stream</text>
+  <text class="s" x="731" y="174.5">normalise · features</text>
+  <text class="id" x="731" y="191.5">APP-03</text>
+  <path class="ln" d="M659 170H673" marker-end="url(#ah)"/>
+  <rect class="card" x="803" y="130" width="112" height="80" rx="5"/>
+  <text class="t" x="859" y="157.5">Detection</text>
+  <text class="s" x="859" y="174.5">drift · thresholds</text>
+  <text class="id" x="859" y="191.5">APP-04</text>
+  <path class="ln" d="M787 170H801" marker-end="url(#ah)"/>
+  <text class="lbl" x="35" y="245">IF A STAGE FAILS</text>
+  <text class="s" x="219" y="266">cloud lost: L5</text>
+  <text class="s" x="219" y="281">edge rules, buffer</text>
+  <text class="s" x="347" y="266">down: edge</text>
+  <text class="s" x="347" y="281">buffers, replays</text>
+  <text class="s" x="475" y="266">Kafka down:</text>
+  <text class="s" x="475" y="281">spool, retry-after</text>
+  <text class="s" x="603" y="266">slow: lag alerts,</text>
+  <text class="s" x="603" y="281">pressure to edge</text>
+  <text class="s" x="731" y="266">crash: rebalance,</text>
+  <text class="s" x="731" y="281">idempotent replay</text>
+  <text class="s" x="859" y="266">ML down: L4</text>
+  <text class="s" x="859" y="281">thresholds, flag</text>
+  <rect class="card" x="35" y="298" width="300" height="48" rx="5"/>
+  <text class="t" x="185" y="318">Fallback Controller · APP-13</text>
+  <text class="s" x="185" y="335">health, lag, budget → fallback.level to all</text>
+  <path class="ln" d="M419 305V314H915V305"/>
+  <text class="cap" x="667" y="333">NFR-P1 target: ingest to alert p95 under 5 s on the reference desktop</text>
+  <text class="cap" x="667" y="348">a design target until measured on the simulator</text>
+  <path d="M947 66V354" style="fill:none;stroke:var(--red-s);stroke-width:2.5;stroke-dasharray:7 5"/>
+  <path class="ln" d="M915 170H968" marker-end="url(#ah)"/>
+  <text class="cap en" x="943" y="228">detect.alerts.v1</text>
+  <rect class="card" x="970" y="130" width="195" height="80" rx="5"/>
+  <text class="t" x="1067.5" y="157.5">Agent Orchestrator</text>
+  <text class="s" x="1067.5" y="174.5">deterministic routing</text>
+  <text class="id" x="1067.5" y="191.5">APP-09</text>
+  <rect class="card" x="970" y="240" width="195" height="70" rx="5"/>
+  <text class="t" x="1067.5" y="262.5">Model Gateway</text>
+  <text class="s" x="1067.5" y="279.5">first model call allowed</text>
+  <text class="id" x="1067.5" y="296.5">APP-26</text>
+  <path class="ln" d="M1067 210V238" marker-end="url(#ah)"/>
+  <text class="cap" x="1067" y="332">causal engine decides</text>
+  <text class="cap" x="1067" y="347">LLM only narrates</text>
+  <rect class="zone grey" x="20" y="375" width="1160" height="265" rx="8"/>
+  <text class="lbl" x="30" y="393">DEGRADATION LADDER · 03 §13.2 · FBK-1</text>
+  <text class="cap st" x="30" y="409">detection and alerting stay on at every level · escalation is immediate · recovery one level at a time with hysteresis (FBK-4)</text>
+  <text class="cap st" x="35" y="457">trigger</text>
+  <text class="cap st" x="35" y="490">detection</text>
+  <text class="cap st" x="35" y="520">trust, impact</text>
+  <text class="cap st" x="35" y="550">retrieval</text>
+  <text class="cap st" x="35" y="580">narration</text>
+  <text class="cap st" x="35" y="610">approvals</text>
+  <rect class="card" x="150" y="422" width="160" height="203" rx="5"/>
+  <rect class="green" x="150" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="230" y="440">L0</text>
+  <text class="s" x="230" y="459">healthy</text>
+  <text class="s" x="230" y="490" style="font-weight:600;fill:var(--ink)">Full</text>
+  <text class="s" x="230" y="520">Full</text>
+  <text class="s" x="230" y="550">Hybrid with graph</text>
+  <text class="s" x="230" y="580">LLM</text>
+  <text class="s" x="230" y="610">Normal tiers</text>
+  <rect class="card" x="318" y="422" width="160" height="203" rx="5"/>
+  <rect class="amber" x="318" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="398" y="440">L1</text>
+  <text class="s" x="398" y="454">LLM down or</text>
+  <text class="s" x="398" y="467">budget warning</text>
+  <text class="s" x="398" y="490" style="font-weight:600;fill:var(--ink)">Full</text>
+  <text class="s" x="398" y="520">Full</text>
+  <text class="s" x="398" y="550">Full</text>
+  <text class="s" x="398" y="580">Smaller local model</text>
+  <text class="s" x="398" y="610">Normal tiers</text>
+  <rect class="card" x="486" y="422" width="160" height="203" rx="5"/>
+  <rect class="amber" x="486" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="566" y="440">L2</text>
+  <text class="s" x="566" y="454">no LLM or</text>
+  <text class="s" x="566" y="467">budget exhausted</text>
+  <text class="s" x="566" y="490" style="font-weight:600;fill:var(--ink)">Full</text>
+  <text class="s" x="566" y="520">Full</text>
+  <text class="s" x="566" y="550">Full</text>
+  <text class="s" x="566" y="580">Template, citations</text>
+  <text class="s" x="566" y="610">Normal tiers</text>
+  <rect class="card" x="654" y="422" width="160" height="203" rx="5"/>
+  <rect class="amber" x="654" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="734" y="440">L3</text>
+  <text class="s" x="734" y="454">retrieval down</text>
+  <text class="s" x="734" y="467">or stale index</text>
+  <text class="s" x="734" y="490" style="font-weight:600;fill:var(--ink)">Full</text>
+  <text class="s" x="734" y="520">Full</text>
+  <text class="s" x="734" y="550">Last-known-good</text>
+  <text class="s" x="734" y="580">Template, unverified</text>
+  <text class="s" x="734" y="610">Minimum tier 2</text>
+  <rect class="card" x="822" y="422" width="160" height="203" rx="5"/>
+  <rect class="red" x="822" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="902" y="440">L4</text>
+  <text class="s" x="902" y="459">ML services down</text>
+  <text class="s" x="902" y="490" style="font-weight:600;fill:var(--ink)">Thresholds + charts</text>
+  <text class="s" x="902" y="520">Basic checks</text>
+  <text class="s" x="902" y="550">None</text>
+  <text class="s" x="902" y="580">Template</text>
+  <text class="s" x="902" y="610">Minimum tier 2</text>
+  <rect class="card" x="990" y="422" width="160" height="203" rx="5"/>
+  <rect class="red" x="990" y="422" width="160" height="50" rx="5"/>
+  <text class="t" x="1070" y="440">L5</text>
+  <text class="s" x="1070" y="459">cloud link lost</text>
+  <text class="s" x="1070" y="490" style="font-weight:600;fill:var(--ink)">Edge rules, buffer</text>
+  <text class="s" x="1070" y="520">Basic</text>
+  <text class="s" x="1070" y="550">None</text>
+  <text class="s" x="1070" y="580">Local alert text</text>
+  <text class="s" x="1070" y="610">Local ack, sync later</text>
+</svg>
+</div>
+
+<footer>
+  <p>Sources: doc/03 section 1 (Tier 0 and Tier 1 split), 3 (ingestion), 4.4 (detection failure behaviour) and 13 (fallback controller and ladder); doc/09 section 5 (back-pressure); requirement NFR-P1 and FBK-1 to FBK-4 in doc/req/00-requirements.md.</p>
+  <ul>
+    <li>Open point: CLAUDE.md invariant 6 lists trust and line impact on the real-time alert path, while doc/06 places APP-05 and APP-06 in Tier 1. Detection (APP-04, Tier 0) also shares deployable unit DU-04 with Tier 1 modules. This view follows doc/06 and doc/03 until the owner decides.</li>
+    <li>† Target design, not in the code yet: Edge Agent and its on-disk buffer; the simulator publishes to Mosquitto instead.</li>
+  </ul>
+</footer>
+</main>

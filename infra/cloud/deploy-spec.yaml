@@ -1,0 +1,32 @@
+# Cloud Validation Deployment Specification (WP-11 / NFR-C1 to NFR-C4, ADR-018).
+# Scale-to-zero container configuration for bounded cloud smoke runs.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: auraprime-factorypulse-cloud-smoke
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"  # NFR-C2: Scale to zero when idle
+        autoscaling.knative.dev/maxScale: "2"  # Bound maximum capacity
+        run.googleapis.com/cpu-throttling: "true" # Zero CPU allocation when no requests
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+        - image: gcr.io/auraprime-factorypulse/api-gateway:latest
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: FP_EDITION
+              value: "full"
+            - name: FP_MAX_BUDGET_USD
+              value: "50.00"

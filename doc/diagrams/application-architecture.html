@@ -1,0 +1,275 @@
+<!--
+title: High-level application architecture
+status: draft
+edition: community
+related:
+  - ../06-application-architecture.md
+  - ../09-messaging.md
+  - ../04-architecture-definition.md
+-->
+<title>AuraPrime FactoryPulse Application Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Same visual language as agent-architecture.html. Source of truth: doc/06 sections 2 and 4, doc/09 section 2. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --red-f:#fbe3e1; --red-s:#c8483d; --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50; --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2; --purple-f:#ebe3f7; --purple-s:#8a6cc4;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px;margin:0}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:1000px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:11.5px;fill:var(--muted)}
+svg .id{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .ed{font-family:var(--mono);font-size:10px;font-weight:500;fill:var(--teal);text-anchor:end}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg rect{stroke-width:1.5}
+.zone{stroke-width:1.5}
+.red{fill:var(--red-f);stroke:var(--red-s)}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.purple{fill:var(--purple-f);stroke:var(--purple-s)}
+.card{fill:var(--card);stroke:var(--grey-s)}
+.dashed{stroke-dasharray:5 4}
+.ln{fill:none;stroke:var(--arrow);stroke-width:1.5}
+.ln.dash{stroke-dasharray:5 4}
+.sw-red{background:var(--red-f);border-color:var(--red-s)}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-purple{background:var(--purple-f);border-color:var(--purple-s)}
+footer{font-size:13px;color:var(--muted)}
+footer ul{margin:6px 0 0;padding-left:20px}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Application Architecture</h1>
+  <p>Every application component (APP-xx) by criticality tier, with the interfaces (INT-xx) and Kafka topics between them. Telemetry flows one way from the plant to the platform; the alert path never waits on a model, and every action stays advisory, human-approved and audited.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-red"></i>Tier 0 · alert path</span>
+  <span><i class="sw-blue"></i>Tier 1 · diagnosis and governance</span>
+  <span><i class="sw-green"></i>Tier 2 · platform and experience</span>
+  <span><i class="sw-amber"></i>Data</span>
+  <span><i class="sw-purple"></i>Observability</span>
+  <span><b>C</b> Community · <b>F</b> Full · <b>C/F</b> basic in Community, extended in Full</span>
+  <span>solid: call or event · dashed: control signal</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 45 1200 660" role="img" aria-label="AuraPrime FactoryPulse application architecture: plant edge feeding a Tier 0 alert path over MQTT and Kafka, a Tier 1 diagnosis and governance tier around the agent orchestrator, a Tier 2 platform tier with API gateway, web, mobile and MCP, plus data stores, safety invariants and the observability plane.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+  <rect class="zone grey" x="20" y="60" width="150" height="460" rx="8"/>
+  <text class="lbl" x="30" y="78">PLANT EDGE</text>
+  <text class="cap" x="30" y="94" style="text-anchor:start">inbound only</text>
+  <rect class="zone red" x="185" y="60" width="330" height="460" rx="8"/>
+  <text class="lbl" x="195" y="78">TIER 0 · ALERT PATH</text>
+  <text class="cap" x="195" y="94" style="text-anchor:start">no LLM or MCP · alerts never dropped</text>
+  <rect class="zone blue" x="530" y="60" width="400" height="460" rx="8"/>
+  <text class="lbl" x="540" y="78">TIER 1 · DIAGNOSIS AND GOVERNANCE</text>
+  <text class="cap" x="540" y="94" style="text-anchor:start">causal engine decides · LLM narrates</text>
+  <rect class="zone green" x="945" y="60" width="235" height="460" rx="8"/>
+  <text class="lbl" x="955" y="78">TIER 2 · PLATFORM, EXPERIENCE</text>
+  <text class="cap" x="955" y="94" style="text-anchor:start">edge controls before identity</text>
+  <rect class="grey dashed" x="30" y="120" width="130" height="56" rx="5"/>
+  <text class="t" x="95" y="143.5">Machines, PLCs</text>
+  <text class="s" x="95" y="160.5">OPC UA · Sparkplug B †</text>
+  <rect class="card" x="30" y="220" width="130" height="70" rx="5"/>
+  <text class="t" x="95" y="242">Edge Agent †</text>
+  <text class="s" x="95" y="259">buffer · replay</text>
+  <text class="id" x="95" y="276">APP-01</text>
+  <text class="ed" x="154" y="233">C</text>
+  <rect class="card" x="30" y="340" width="130" height="70" rx="5"/>
+  <text class="t" x="95" y="362">Mosquitto</text>
+  <text class="s" x="95" y="379">plant MQTT broker</text>
+  <text class="id" x="95" y="396">per-site</text>
+  <text class="ed" x="154" y="353">C</text>
+  <text class="cap" x="95" y="436" style="text-anchor:middle">Simulator APP-21</text>
+  <text class="cap" x="95" y="450" style="text-anchor:middle">feeds INT-01 in tests</text>
+  <text class="cap" x="95" y="470" style="text-anchor:middle">no commands back</text>
+  <text class="cap" x="95" y="485" style="text-anchor:middle">to the plant</text>
+  <rect class="card" x="195" y="120" width="150" height="80" rx="5"/>
+  <text class="t" x="270" y="147">Ingest Gateway</text>
+  <text class="s" x="270" y="164">registry · idempotency</text>
+  <text class="id" x="270" y="181">APP-02</text>
+  <text class="ed" x="339" y="133">C</text>
+  <rect class="card" x="355" y="120" width="150" height="80" rx="5"/>
+  <text class="t" x="430" y="147">Kafka backbone</text>
+  <text class="s" x="430" y="164">schema registry † · DLQ</text>
+  <text class="id" x="430" y="181">all tiers</text>
+  <text class="ed" x="499" y="133">C</text>
+  <rect class="card" x="195" y="240" width="150" height="64" rx="5"/>
+  <text class="t" x="270" y="259">Stream Processor</text>
+  <text class="s" x="270" y="276">normalise · enrich</text>
+  <text class="id" x="270" y="293">APP-03</text>
+  <text class="ed" x="339" y="253">C</text>
+  <rect class="card" x="355" y="240" width="150" height="64" rx="5"/>
+  <text class="t" x="430" y="259">Detection</text>
+  <text class="s" x="430" y="276">baseline · drift</text>
+  <text class="id" x="430" y="293">APP-04</text>
+  <text class="ed" x="499" y="253">C/F</text>
+  <rect class="card" x="195" y="360" width="150" height="80" rx="5"/>
+  <text class="t" x="270" y="387">Fallback Controller</text>
+  <text class="s" x="270" y="404">ladder L0 to L5</text>
+  <text class="id" x="270" y="421">APP-13</text>
+  <text class="ed" x="339" y="373">C</text>
+  <rect class="card" x="550" y="120" width="180" height="70" rx="5"/>
+  <text class="t" x="640" y="142">Agent Orchestrator</text>
+  <text class="s" x="640" y="159">deterministic routing</text>
+  <text class="id" x="640" y="176">APP-09</text>
+  <text class="ed" x="724" y="133">C</text>
+  <rect class="card" x="740" y="120" width="180" height="70" rx="5"/>
+  <text class="t" x="830" y="142">Model Gateway</text>
+  <text class="s" x="830" y="159">only LLM path · ADR-038</text>
+  <text class="id" x="830" y="176">APP-26</text>
+  <text class="ed" x="914" y="133">C</text>
+  <rect class="card" x="550" y="230" width="180" height="70" rx="5"/>
+  <text class="t" x="640" y="252">intel-core</text>
+  <text class="s" x="640" y="269">trust · impact · causal</text>
+  <text class="id" x="640" y="286">APP-05 · 06 · 08</text>
+  <text class="ed" x="724" y="243">F</text>
+  <rect class="card" x="740" y="230" width="180" height="70" rx="5"/>
+  <text class="t" x="830" y="252">Knowledge</text>
+  <text class="s" x="830" y="269">hybrid retrieval · cited</text>
+  <text class="id" x="830" y="286">APP-07</text>
+  <text class="ed" x="914" y="243">C/F</text>
+  <rect class="card" x="550" y="340" width="180" height="70" rx="5"/>
+  <text class="t" x="640" y="362">Case service</text>
+  <text class="s" x="640" y="379">draft work orders · learning</text>
+  <text class="id" x="640" y="396">APP-11 · 12</text>
+  <text class="ed" x="724" y="353">C/F</text>
+  <rect class="card" x="740" y="340" width="180" height="70" rx="5"/>
+  <text class="t" x="830" y="362">Policy Engine</text>
+  <text class="s" x="830" y="379">approval tier</text>
+  <text class="id" x="830" y="396">APP-10</text>
+  <text class="ed" x="914" y="353">C/F</text>
+  <rect class="card" x="640" y="440" width="190" height="60" rx="5"/>
+  <text class="t" x="735" y="457">Audit and Evidence</text>
+  <text class="s" x="735" y="474">sole chain writer</text>
+  <text class="id" x="735" y="491">APP-20</text>
+  <text class="ed" x="824" y="453">C/F</text>
+  <rect class="card" x="955" y="120" width="100" height="56" rx="5"/>
+  <text class="t" x="1005" y="135">Web</text>
+  <text class="s" x="1005" y="152">operations</text>
+  <text class="id" x="1005" y="169">APP-22</text>
+  <text class="ed" x="1049" y="133">C/F</text>
+  <rect class="card" x="1070" y="120" width="100" height="56" rx="5"/>
+  <text class="t" x="1120" y="135">Mobile</text>
+  <text class="s" x="1120" y="152">technician</text>
+  <text class="id" x="1120" y="169">APP-23</text>
+  <text class="ed" x="1164" y="133">C</text>
+  <rect class="card" x="955" y="230" width="215" height="80" rx="5"/>
+  <text class="t" x="1062.5" y="257">API Gateway and BFF</text>
+  <text class="s" x="1062.5" y="274">auth · tenancy · webhooks</text>
+  <text class="id" x="1062.5" y="291">APP-17 · 18 · 19 · 25</text>
+  <text class="ed" x="1164" y="243">C/F</text>
+  <rect class="card" x="955" y="340" width="215" height="60" rx="5"/>
+  <text class="t" x="1062.5" y="357">MCP Server</text>
+  <text class="s" x="1062.5" y="374">read-only tools · default deny</text>
+  <text class="id" x="1062.5" y="391">APP-15 · INT-13 in</text>
+  <text class="ed" x="1164" y="353">C/F</text>
+  <rect class="card" x="955" y="430" width="215" height="60" rx="5"/>
+  <text class="t" x="1062.5" y="447">MCP Client Gateway</text>
+  <text class="s" x="1062.5" y="464">allow-listed egress</text>
+  <text class="id" x="1062.5" y="481">APP-16 · INT-14 out</text>
+  <text class="ed" x="1164" y="443">F</text>
+  <rect class="zone amber" x="530" y="535" width="650" height="95" rx="8"/>
+  <text class="lbl" x="540" y="553">DATA</text>
+  <text class="cap" x="540" y="569" style="text-anchor:start">tenant ID on every record · row-level security on</text>
+  <rect class="card" x="540" y="578" width="250" height="44" rx="5"/>
+  <text class="t" x="665" y="595.5">PostgreSQL · Timescale · pgvector</text>
+  <text class="s" x="665" y="612.5">shared incident record</text>
+  <rect class="card" x="800" y="578" width="175" height="44" rx="5"/>
+  <text class="t" x="887.5" y="595.5">Object store †</text>
+  <text class="s" x="887.5" y="612.5">documents · evidence</text>
+  <rect class="card" x="985" y="578" width="185" height="44" rx="5"/>
+  <text class="t" x="1077.5" y="595.5">Secrets manager †</text>
+  <text class="s" x="1077.5" y="612.5">referenced by name only</text>
+  <rect class="zone grey" x="20" y="535" width="495" height="95" rx="8"/>
+  <text class="lbl" x="30" y="553">SAFETY INVARIANTS ON THIS VIEW</text>
+  <text class="cap" x="30" y="568" style="text-anchor:start">1 advisory only · work orders are drafts</text>
+  <text class="cap" x="30" y="583" style="text-anchor:start">2 only a human session approves · 3 only APP-20 writes audit</text>
+  <text class="cap" x="30" y="598" style="text-anchor:start">4 tenant ID everywhere, RLS on · 5 alerts never dropped</text>
+  <text class="cap" x="30" y="613" style="text-anchor:start">6 alert path never calls an LLM or MCP · 7 secrets by name</text>
+  <rect class="zone purple" x="20" y="645" width="1160" height="50" rx="8"/>
+  <text class="lbl" x="30" y="663">OBSERVABILITY PLANE · APP-14 · C/F</text>
+  <text class="cap" x="30" y="681" style="text-anchor:start">OpenTelemetry context across MQTT, Kafka and service calls · every tier emits OTLP (INT-17) · redaction before export</text>
+  <path class="ln" d="M95 176V218" marker-end="url(#ah)"/>
+  <path class="ln" d="M95 290V338" marker-end="url(#ah)"/>
+  <text class="cap" x="100" y="318" style="text-anchor:start">MQTT</text>
+  <path class="ln" d="M160 375H177V160H193" marker-end="url(#ah)"/>
+  <text class="cap" x="191" y="112" style="text-anchor:start">INT-01 · MQTT, OTLP</text>
+  <path class="ln" d="M345 160H353" marker-end="url(#ah)"/>
+  <path class="ln" d="M430 200V220H270V238" marker-end="url(#ah)"/>
+  <text class="cap" x="276" y="215" style="text-anchor:start">tel.raw</text>
+  <path class="ln" d="M345 272H353" marker-end="url(#ah)"/>
+  <text class="cap" x="350" y="322" style="text-anchor:middle">tel.features</text>
+  <path class="ln" d="M505 272H520V145H548" marker-end="url(#ah)"/>
+  <text class="cap" x="512" y="112" style="text-anchor:end">detect.alerts</text>
+  <path class="ln dash" d="M345 400H430V306" marker-end="url(#ah)"/>
+  <text class="cap" x="352" y="418" style="text-anchor:start">INT-11 level to all</text>
+  <path class="ln" d="M730 155H738" marker-end="url(#ah)"/>
+  <path class="ln" d="M640 190V228" marker-end="url(#ah)"/>
+  <text class="cap" x="634" y="213" style="text-anchor:end">INT-04/05/07</text>
+  <path class="ln" d="M700 190L770 228" marker-end="url(#ah)"/>
+  <path class="ln" d="M550 170H540V375H548" marker-end="url(#ah)"/>
+  <text class="cap" x="546" y="322" style="text-anchor:start">INT-10</text>
+  <path class="ln" d="M730 375H738" marker-end="url(#ah)"/>
+  <path class="ln" d="M600 410V470H638" marker-end="url(#ah)"/>
+  <path class="ln" d="M880 410V470H832" marker-end="url(#ah)"/>
+  <text class="cap" x="886" y="432" style="text-anchor:start">INT-16</text>
+  <path class="ln" d="M1005 176V228" marker-end="url(#ah)"/>
+  <path class="ln" d="M1120 176V228" marker-end="url(#ah)"/>
+  <text class="cap" x="1012" y="205" style="text-anchor:start">INT-12</text>
+  <path class="ln" d="M1062 340V312" marker-end="url(#ah)"/>
+  <path class="ln" d="M1170 460H1176V270H1172" marker-end="url(#ah)"/>
+  <path class="ln" d="M955 245H940V104H640V118" marker-end="url(#ah)"/>
+  <path class="ln" d="M955 265H922" marker-end="url(#ah)"/>
+  <path class="ln" d="M955 295H938V512H570V412" marker-end="url(#ah)"/>
+</svg>
+</div>
+
+<footer>
+  <p>Sources: doc/06 section 2 (component catalog, tiers, editions), section 4 (communication diagram) and section 5 (interfaces); doc/09 section 2 (topology) and section 4.1 (topic names are working proposals, shown without environment prefix or version). Deployable units are in doc/06 section 3.</p>
+  <ul>
+    <li>Open point: CLAUDE.md invariant 6 lists trust and line impact on the real-time alert path, while doc/06 places APP-05 and APP-06 in Tier 1. This view follows doc/06 until the owner decides.</li>
+    <li>† Target design, not in the code yet: Edge Agent (the simulator publishes to Mosquitto instead), OPC UA and Sparkplug B adapters, schema registry, object store, secrets manager (secrets are read from the environment by name), OTel Collector.</li>
+    <li>Updated 2026-11-07: APP-02 also takes OTLP/HTTP JSON and checks the sensor registry (ADR-039). The narration port has Claude and Gemini adapters selected by config (ADR-038). Role-based screen access (ADR-040) and the document lifecycle (ADR-041) sit inside the components shown.</li>
+  </ul>
+</footer>
+</main>

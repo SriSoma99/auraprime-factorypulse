@@ -1,0 +1,157 @@
+<!--
+title: "Wireframe W14: Plant equipment"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-039-equipment-registry-sensor-health-otlp.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W14 Plant Equipment</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens.
+   Source of truth: 02 section 6.1 (W14 row), ADR-039. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.body{padding:14px;display:grid;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;background:var(--fill)}
+.chip.ok{border-color:var(--ok-s);background:var(--ok-f)} .chip.warn{border-color:var(--warn-s);background:var(--warn-f)} .chip.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--paper)}
+.card.dashed{border-style:dashed}
+.muted{color:var(--muted);font-size:13px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:14px;background:var(--paper)}
+.tab.on{border-width:2px;border-color:var(--ink);font-weight:600}
+.line{display:flex;flex-wrap:wrap;gap:10px}
+.station{width:330px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:10px;display:grid;gap:6px}
+.station .hd{display:flex;justify-content:space-between;gap:8px} .station .hd b{font-size:14px}
+.machine{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:8px 10px;display:grid;gap:4px}
+.machine .hd{display:flex;justify-content:space-between;align-items:flex-start}
+.sensor{border-top:1px solid var(--line);padding-top:4px;display:grid;grid-template-columns:1fr auto;gap:0 8px;font-size:13.5px}
+.sensor .v{font-family:var(--mono)} .sensor .r{color:var(--muted);font-size:12.5px;text-align:right}
+.st{font-weight:600;font-size:12.5px;text-align:right}
+.st.ok{color:var(--ok-s)} .st.bad{color:var(--bad-s)} .st.warn{color:var(--warn-s)} .st.nd{color:var(--muted)}
+.skel{background:var(--fill);border-radius:6px;height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){.station{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>W14 Plant equipment (first screen)</h1>
+    <p class="lede">Every line, station, machine and sensor of the site with its configured limits and live health, before alerts or approvals. Health and machine state are shown by symbol and label, never by colour alone (UI-6).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls (not part of the screen)">
+    <fieldset id="c-state"><legend>Screen state</legend>
+      <button data-v="loading">loading</button><button data-v="error">error</button><button data-v="empty">empty</button><button data-v="noTelemetry">no telemetry</button><button data-v="live">live</button>
+    </fieldset>
+    <fieldset id="c-filter"><legend>Filter</legend><button data-v="all">all sensors</button><button data-v="attention">attention only</button></fieldset>
+    <span class="vm" id="vm"></span>
+  </div>
+
+  <section class="screen" aria-label="W14 Plant equipment">
+    <div class="body">
+      <div data-states="loading"><div class="skel"></div></div>
+      <div class="card" data-states="error" style="border-color:var(--bad-s);background:var(--bad-f)">The plant view could not be loaded. It retries automatically.</div>
+      <div class="card dashed" data-states="empty">No equipment is registered for this site yet.</div>
+
+      <div data-states="noTelemetry live">
+        <div class="card">
+          <div class="chips" id="summary"></div>
+          <div class="muted">Health from registry limits and readings in the last 15 min (telemetry_health.lookback_minutes) · updated just now</div>
+        </div>
+      </div>
+      <div class="card dashed" data-states="noTelemetry"><b>No telemetry received in the last 15 min.</b><div class="muted">Every sensor shows "no data" until readings arrive over MQTT or OTLP.</div></div>
+
+      <div class="tabs" data-states="noTelemetry live">
+        <span class="tab on" id="tab1">Demo Plant · Demo machining line</span><span class="tab">Plant A · Body line 1</span><span class="tab" id="flt">☐ Only sensors needing attention</span>
+      </div>
+
+      <div class="line" id="line" data-states="noTelemetry live"></div>
+      <div class="muted" data-states="noTelemetry live">Symbols carry the state: ● OK · ▲ out of range · ▬ flatline · ◌ stale · ○ no data. Limits come from the equipment registry, not from documents (RAG-11).</div>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.1 row W14 and ADR-039. Requirements: ING-7, ING-12, UI-4, UI-6. Data: <code>GET /v1/plant</code>, polled at app.poll_interval_ms.</p>
+    <ul>
+      <li>Health precedence: no data, stale (silent longer than the sensor's max silence), out of range, flatline, OK. A flatline only counts while the machine runs or its state is unknown.</li>
+      <li>Machine state comes from the machine's state sensor and its run and stop thresholds; without a fresh reading it is "state unknown", never assumed running.</li>
+      <li>The filter hides OK sensors only; stations and machines stay, so the line stays recognisable. "No data" counts as needing attention.</li>
+      <li>The phone layout stacks stations in line order; each station card takes the full width.</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"live",filter:"all"};
+// Synthetic CNC line excerpt (ADR-019); live values follow the cnc_machining_line scenario.
+const stations=[
+  {n:"1. Operation 10",c:"40 s cycle",buf:"4 min",m:{id:"M-01",name:"Machining centre 1",tag:"MC-01 · Example OEM VMC-850",state:["▶ Running","ok"],s:[
+    ["Spindle speed S-01-SPD","5897 rpm","5500–6500 rpm","ok"],["Spindle vibration S-01-VIB","2.21 mm/s","0.5–4.5 mm/s","ok"],["Spindle temperature S-01-TMP","46.8 degC","25–65 degC","ok"]]}},
+  {n:"3. Operation 30",c:"40 s cycle",buf:null,m:{id:"M-03",name:"Machining centre 3",tag:"MC-03 · Example OEM VMC-850",state:["▶ Running","ok"],s:[
+    ["Spindle vibration S-03-VIB","2.17 mm/s","0.5–4.5 mm/s","flat"],["Spindle speed S-03-SPD","5900 rpm","5500–6500 rpm","ok"],["Spindle temperature S-03-TMP","47.3 degC","25–65 degC","ok"]]}},
+  {n:"5. Operation 50",c:"40 s cycle",buf:"4 min",m:{id:"M-05",name:"Machining centre 5",tag:"MC-05 · Example OEM VMC-850",state:["■ Stopped","bad"],s:[
+    ["Spindle speed S-05-SPD","4.2 rpm","5500–6500 rpm","low"],["Spindle vibration S-05-VIB","0.062 mm/s","0.5–4.5 mm/s","low"],["Spindle temperature S-05-TMP","45.4 degC","25–65 degC","ok"]]}},
+  {n:"7. Operation 70",c:"40 s cycle",buf:"4 min",m:{id:"M-07",name:"Machining centre 7",tag:"MC-07 · Example OEM VMC-850",state:["▶ Running","ok"],s:[
+    ["Spindle temperature S-07-TMP","50.9 degC","25–65 degC","stale"],["Spindle speed S-07-SPD","6004 rpm","5500–6500 rpm","ok"],["Spindle vibration S-07-VIB","1.98 mm/s","0.5–4.5 mm/s","ok"]]}},
+];
+const ST={ok:["● OK","ok"],low:["▲ Out of range (low)","bad"],flat:["▬ Flatline","warn"],stale:["◌ Stale","warn"],nd:["○ No data","nd"]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.toggleAttribute("hidden",!el.dataset.states.split(" ").includes(S.state)));
+  const none=S.state==="noTelemetry";
+  document.getElementById("summary").innerHTML=none?'<span class="chip">○ 39 no data</span>':
+    '<span class="chip bad">▲ 4 out of range</span><span class="chip warn">▬ 1 flatline</span><span class="chip warn">◌ 1 stale</span><span class="chip">○ 9 no data</span><span class="chip ok">● 24 ok</span>';
+  document.getElementById("flt").textContent=(S.filter==="attention"?"☑":"☐")+" Only sensors needing attention";
+  document.getElementById("line").innerHTML=stations.map(st=>{
+    const m=st.m, state=none?["? State unknown","nd"]:m.state;
+    const rows=m.s.map(([n,v,r,k])=>none?[n,"—",r,"nd"]:[n,v,r,k]).filter(x=>S.filter==="all"||x[3]!=="ok");
+    return '<div class="station"><div class="hd"><b>'+st.n+'</b><span class="muted">'+st.c+'</span></div>'+
+      '<div class="machine"><div class="hd"><div><b>'+m.name+'</b><div class="muted">'+m.tag+'</div></div><span class="chip '+state[1]+'">'+state[0]+'</span></div>'+
+      (rows.length?rows.map(([n,v,r,k])=>'<div class="sensor"><span>'+n+'</span><span class="st '+ST[k][1]+'">'+ST[k][0]+'</span><span class="v">'+v+'</span><span class="r">normal '+r+'</span>'+
+        (k==="stale"?'<span class="muted" style="grid-column:1/3">silent 31 s (limit 10 s)</span>':'')+'</div>').join(""):'<div class="muted">All sensors OK.</div>')+
+      '</div>'+(st.buf?'<div class="muted">→ '+st.buf+' buffer to next station</div>':'')+'</div>';
+  }).join("");
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.attentionOnly = "+(S.filter==="attention");
+  for(const [k,id] of [["state","c-state"],["filter","c-filter"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["filter","c-filter"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;render();}));
+render();
+</script>
+</body>
+</html>

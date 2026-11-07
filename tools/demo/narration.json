@@ -1,0 +1,72 @@
+{
+  "$comment": "Narrated hero demo (01 hero scenario). Scene ids are referenced by apps/app/e2e/demo.video.ts. Text must describe only what the screen shows. Voice: Kokoro (Apache-2.0) run offline through sherpa-onnx; model directory from FP_TTS_MODEL_DIR (kokoro-en-v0_19 from the sherpa-onnx tts-models release).",
+  "voice": {
+    "speakerId": 6,
+    "speed": 1.0
+  },
+  "leadInMs": 800,
+  "gapMs": 700,
+  "outDir": "build/demo",
+  "scenes": [
+    {
+      "id": "intro",
+      "text": "This is Aura Prime Factory Pulse, an advisory maintenance assistant for manufacturing lines. Everything you are about to see runs on synthetic data."
+    },
+    {
+      "id": "plant",
+      "text": "The first screen is the plant itself: every line, station, machine and sensor, with each sensor's normal range. Readings arrive over M Q T T. Here one spindle is below its range on a stopped machine, a vibration sensor has flatlined, and a temperature sensor has gone silent."
+    },
+    {
+      "id": "line",
+      "text": "The line map ranks open alerts by their impact on the whole line, not just on machine health. Weld Cell 4 is the bottleneck. If it slows down, the quality gate starves as soon as its twenty two minute buffer runs out."
+    },
+    {
+      "id": "incident",
+      "text": "Opening the top alert brings up the incident. Cooling flow is falling while transformer temperature rises, and the controller is compensating. Detection, sensor trust, and line impact were all computed without a language model."
+    },
+    {
+      "id": "hypotheses",
+      "text": "A causal engine ranks the hypotheses. Coolant restriction at fifty eight percent, flow sensor drift at thirty four. The evidence ledger shows what supports each one, and every claim cites its source in the weld transformer manual."
+    },
+    {
+      "id": "abstain",
+      "text": "Because the top two causes are still close, the system does not guess. It says there is insufficient evidence, and proposes the cheapest check that separates them: a ten minute flow reading and strainer inspection."
+    },
+    {
+      "id": "approval",
+      "text": "The inspection is a draft work order. Nothing is sent to equipment. Policy places it at tier one, so the shift lead can approve it, in a human session."
+    },
+    {
+      "id": "approved",
+      "text": "The approval is recorded in the hash chained audit log, and the check moves to the technician's checklist."
+    },
+    {
+      "id": "checklist",
+      "text": "On the floor, the technician confirms the asset and the safety step. A reading of one hundred eighty four is outside what the instrument can measure, so it is rejected before it can be saved."
+    },
+    {
+      "id": "finding",
+      "text": "The real reading, eighteen point four litres per minute, is below reference, and the strainer is partly blocked. The finding goes back to the incident, which closes only after the drift reverses for the required number of good cycles."
+    },
+    {
+      "id": "trust",
+      "text": "Telemetry trust catches a different kind of failure. Pressure sensor P T 310 has been flat for three hours while related signals keep moving. So Aura Prime Factory Pulse drafts a sensor check, instead of blaming the machine."
+    },
+    {
+      "id": "documents",
+      "text": "Manuals and procedures ground every answer, so the knowledge base checks what comes in. Text that is too short, or missing a required section, is refused with every reason shown. A document written to the template is accepted, but it waits for a second person to approve it before any answer can cite it."
+    },
+    {
+      "id": "apikey",
+      "text": "And one rule never bends. An A P I key can view an approval, but only a human can approve it."
+    },
+    {
+      "id": "roles",
+      "text": "Every screen follows the user's role. A line operator sees the plant, the line, alerts and settings, and nothing else. The server enforces the same rules."
+    },
+    {
+      "id": "outro",
+      "text": "Aura Prime Factory Pulse is open source under the Apache 2 licence. The code, the architecture, and every design decision are in the repository."
+    }
+  ]
+}

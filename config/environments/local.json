@@ -1,0 +1,4 @@
+{
+  "api": { "cors_origins": ["http://localhost:8081", "http://localhost:19006"] },
+  "mock": { "controls_enabled": true }
+}

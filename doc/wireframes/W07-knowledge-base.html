@@ -1,0 +1,330 @@
+<!--
+title: "Wireframe W07: Knowledge base"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W07 Knowledge Base</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03 & 2026-10-05). Neutral placeholders;
+   Source: 02 section 6.1 (W07 row); RAG-1, RAG-5, RAG-10; ADR-028. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+/* wireframe test switcher */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.warn{background:var(--warn-f);color:var(--warn-s);border-color:var(--warn-s)}
+.chip.bad{background:var(--bad-f);color:var(--bad-s);border-color:var(--bad-s)}
+
+/* tabs */
+.tabnav{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--fill)}
+.tabnav button{border:0;border-right:1px solid var(--line);background:transparent;padding:10px 18px;font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+.tabnav button.active{background:var(--paper);color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent);margin-bottom:-1px}
+.tabnav button .badge{font-size:11px;font-family:var(--mono);padding:1px 6px;border-radius:999px;background:var(--line);margin-left:6px}
+
+/* search bar row */
+.search-row{display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--line);background:var(--paper)}
+.search-input{flex:1;padding:8px 12px;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.btn{font:inherit;font-size:13.5px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12.5px;border-width:1px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--fill)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:hover td{background:var(--fill)}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.active{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.pending{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+.status-badge.quarantine{background:var(--bad-f);color:var(--bad-s);border:1px solid var(--bad-s)}
+.status-badge.superseded{background:var(--fill2);color:var(--muted);border:1px solid var(--line)}
+
+.cite-link{color:var(--accent);text-decoration:none;font-weight:600}
+.cite-link:hover{text-decoration:underline}
+
+/* skeleton & empty callouts */
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:36px}
+.callout{padding:24px;text-align:center;color:var(--muted)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W07 Knowledge Base &amp; Corpus Governance</h1>
+    <p class="lede">
+      Verified technical documents, equipment manuals, and standard operating procedures (SOPs).
+      Enforces ingestion approvals, superseding versions (RAG-5), quarantine safety (RAG-10), and strict citation traceability (RAG-1).
+    </p>
+  </div>
+
+  <!-- State Switcher -->
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="normal" aria-pressed="true">active_documents</button>
+      <button type="button" data-state="loading" aria-pressed="false">loading</button>
+      <button type="button" data-state="ingestion_pending" aria-pressed="false">ingestion_queue</button>
+      <button type="button" data-state="quarantined" aria-pressed="false">quarantine_list</button>
+      <button type="button" data-state="empty" aria-pressed="false">empty_search</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useKnowledgeBaseViewModel()</code></span>
+  </aside>
+
+  <!-- Screen Frame -->
+  <main class="screen" id="screen" role="region" aria-label="Knowledge Base Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC DATA</span>
+      <span class="kv">Tenant: <b>Demo Plant Org</b></span>
+      <span class="kv">Corpus: <b>Weld &amp; Assembly Line A</b></span>
+      <span class="sp"></span>
+      <button class="btn sm primary">+ Upload Document</button>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tabnav" aria-label="Knowledge categories">
+      <button type="button" class="active" id="tab-active">Active Documents <span class="badge">48</span></button>
+      <button type="button" id="tab-pending">Approval Queue <span class="badge" style="background:var(--warn-s);color:var(--paper)">2</span></button>
+      <button type="button" id="tab-quarantine">Quarantine <span class="badge" style="background:var(--bad-s);color:var(--paper)">1</span></button>
+      <button type="button" id="tab-superseded">Superseded / History <span class="badge">14</span></button>
+    </nav>
+
+    <!-- Search Row -->
+    <div class="search-row">
+      <input type="search" class="search-input" id="search-box" placeholder="Search equipment manuals, SOPs, FMEA sheets, or citations (e.g., 'coolant strainer cleaning', 'Section 4.2')..." value="coolant loop restriction">
+      <button class="btn primary">Search</button>
+      <button class="btn">Filter</button>
+    </div>
+
+    <!-- Loading Skeleton View -->
+    <div id="view-loading" style="padding:14px" hidden>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+    </div>
+
+    <!-- Empty Search View -->
+    <div id="view-empty" class="callout" hidden>
+      <h3>No documents matching your search</h3>
+      <p>No active manuals or procedures match the query. Try searching by asset ID (e.g. <code>WC-04</code>) or component name.</p>
+      <button class="btn sm" onclick="resetSearch()">Clear Search</button>
+    </div>
+
+    <!-- Active Documents Table View -->
+    <div id="view-table">
+      <table class="tbl" aria-label="Documents list">
+        <thead>
+          <tr>
+            <th>Document Title &amp; Source</th>
+            <th>Type</th>
+            <th>Version</th>
+            <th>Target Asset / Line</th>
+            <th>Status</th>
+            <th>Citations / Chunks</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Populated by JS render -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footerbar">
+      <span>Vector Store: <code>pgvector (PostgreSQL 16)</code> &bull; Chunking: Markdown/Section Semantic</span>
+      <span><a href="#">Export Corpus Manifest (JSON)</a> &bull; <a href="#">Runbook RB-05: Retrieval Stale</a></span>
+    </footer>
+
+      <section class="card" aria-label="Amendment ADR-041" style="margin-top:14px;padding:12px;border:1px dashed var(--line);border-radius:8px">
+      <h3 style="margin:0 0 6px">Amendment 2026-11-06 (ADR-041): adding, reviewing and removing documents</h3>
+      <ul style="margin:0;padding-left:18px;font-size:14px">
+        <li><b>Add a document.</b> Pick a type (equipment manual, standard operating procedure, troubleshooting guide) and the equipment from the plant registry; enter title, version and effective date; "Insert template" fills the required headings. The local build also offers sample documents for the signed-in tenant's equipment.</li>
+        <li><b>Refused upload.</b> "Check and upload" lists every problem under its field (for example "Title needs at least 8 characters", "Add the section ## Safety"). Nothing is stored.</li>
+        <li><b>Pending review.</b> An accepted upload is listed as Pending review and is not used in answers. Approve is disabled for the uploader ("another person must approve it").</li>
+        <li><b>Delete or withdraw.</b> Each document has Delete (never cited) or Withdraw (cited by an answer, incident or work order), which opens a reason field; confirm stays disabled until the reason is long enough. Withdrawn documents stay listed with their reason.</li>
+        <li>Filters: All, Pending review, Approved, Withdrawn, each with a count. States: loading, error, empty, ready; view only disables Add, Approve and Delete. Every change shows its audit reference.</li>
+      </ul>
+    </section>
+  </main>
+
+  <ul class="notes">
+    <li><b>RAG-1:</b> Technical documents ingested with section anchors for 100% cited diagnoses.</li>
+    <li><b>RAG-5 (Version superseding):</b> When v4 of the Weld Transformer Manual is approved, v3 chunks are automatically marked <code>SUPERSEDED</code> and excluded from active incident diagnosis.</li>
+    <li><b>RAG-10 (Quarantine gate):</b> External or unverified PDF uploads cannot be indexed by role agents until approved by an ACT-4 Reliability Engineer.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const body = document.getElementById('table-body');
+  const viewTable = document.getElementById('view-table');
+  const viewLoading = document.getElementById('view-loading');
+  const viewEmpty = document.getElementById('view-empty');
+  const searchBox = document.getElementById('search-box');
+
+  const tabActive = document.getElementById('tab-active');
+  const tabPending = document.getElementById('tab-pending');
+  const tabQuarantine = document.getElementById('tab-quarantine');
+  const tabSuperseded = document.getElementById('tab-superseded');
+
+  let state = 'normal';
+
+  const rowsNormal = [
+    { title: "Weld Transformer Coolant Maintenance Manual", file: "MAN-WC4-COOL-v3.2.pdf", type: "OEM Manual", ver: "v3.2", asset: "Weld Cell 4", status: "active", chunks: "42 chunks (14 cited)" },
+    { title: "Emergency Coolant Restriction Clearing SOP", file: "SOP-WELD-044-r2.md", type: "SOP", ver: "r2.0", asset: "All Weld Cells", status: "active", chunks: "18 chunks (6 cited)" },
+    { title: "KUKA KR500 Robot Arm Bearing Lubrication Schedule", file: "SOP-ROB-012.md", type: "SOP", ver: "r1.4", asset: "Framing Station", status: "active", chunks: "24 chunks (2 cited)" },
+    { title: "Coolant Flow Sensor Calibration & Zero-Drift Procedure", file: "CAL-SEN-FLOW-v1.pdf", type: "Calibration", ver: "v1.1", asset: "Sensors (Flow)", status: "active", chunks: "12 chunks (3 cited)" },
+    { title: "Main Conveyor Drive Roller Wear Tolerance Guide", file: "FMEA-CONV-2025.xlsx", type: "FMEA", ver: "v2.0", asset: "Conveyor 2", status: "active", chunks: "36 chunks (1 cited)" }
+  ];
+
+  const rowsPending = [
+    { title: "Draft: Weld Transformer Coolant Maintenance v4.0", file: "MAN-WC4-COOL-v4.0-draft.pdf", type: "OEM Manual", ver: "v4.0 (Draft)", asset: "Weld Cell 4", status: "pending", chunks: "46 chunks (Pending review)", action: "Approve & Supersede v3" },
+    { title: "New Procedure: Ultrasonic Flowmeter Spot Inspection", file: "SOP-SPOT-FLOW-v1.md", type: "SOP", ver: "v1.0", asset: "All Weld Cells", status: "pending", chunks: "8 chunks (Pending review)", action: "Approve for Indexing" }
+  ];
+
+  const rowsQuarantine = [
+    { title: "Supplier Unsigned Bulletin: Third-Party Coolant Additive", file: "BULLETIN-UNK-2026.pdf", type: "Bulletin", ver: "v0.1", asset: "Unknown", status: "quarantine", chunks: "Quarantined: Unverified source / prompt injection risk flagged", action: "Review Quarantine" }
+  ];
+
+  const rowsSuperseded = [
+    { title: "Weld Transformer Coolant Maintenance Manual (v3.1)", file: "MAN-WC4-COOL-v3.1.pdf", type: "OEM Manual", ver: "v3.1", asset: "Weld Cell 4", status: "superseded", chunks: "Superseded by v3.2 on 2026-08-14" },
+    { title: "Emergency Coolant Restriction Clearing SOP (r1.0)", file: "SOP-WELD-044-r1.md", type: "SOP", ver: "r1.0", asset: "All Weld Cells", status: "superseded", chunks: "Superseded by r2.0 on 2026-09-01" }
+  ];
+
+  function render(){
+    viewTable.hidden = false;
+    viewLoading.hidden = true;
+    viewEmpty.hidden = true;
+
+    [tabActive, tabPending, tabQuarantine, tabSuperseded].forEach(t => t.className = '');
+
+    if (state === 'loading'){
+      viewTable.hidden = true;
+      viewLoading.hidden = false;
+      return;
+    }
+    if (state === 'empty'){
+      viewTable.hidden = true;
+      viewEmpty.hidden = false;
+      return;
+    }
+
+    let items = rowsNormal;
+    if (state === 'ingestion_pending') {
+      items = rowsPending;
+      tabPending.className = 'active';
+    } else if (state === 'quarantined') {
+      items = rowsQuarantine;
+      tabQuarantine.className = 'active';
+    } else {
+      tabActive.className = 'active';
+    }
+
+    body.innerHTML = items.map(d => `
+      <tr>
+        <td>
+          <a href="#" class="cite-link">${d.title}</a><br>
+          <span class="kv mono">${d.file}</span>
+        </td>
+        <td><span class="chip">${d.type}</span></td>
+        <td class="mono">${d.ver}</td>
+        <td>${d.asset}</td>
+        <td><span class="status-badge ${d.status}">${d.status.toUpperCase()}</span></td>
+        <td class="mono" style="font-size:12px">${d.chunks}</td>
+        <td>
+          ${d.action ? `<button class="btn sm primary">${d.action}</button>` : `<button class="btn sm">Inspect</button>`}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.resetSearch = function(){
+    state = 'normal';
+    document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.controls button[data-state="normal"]').setAttribute('aria-pressed', 'true');
+    render();
+  };
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state = btn.dataset.state;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

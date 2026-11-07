@@ -1,0 +1,280 @@
+<!--
+title: "Wireframe W02: Alert queue"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W02 Alert Queue</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.1 (W02 row), 7.4, 10, 14. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.toolbar h2{font-size:1.15rem;margin:0 10px 0 0}
+.sel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.search{flex:1;min-width:160px}
+.count{font-size:13px;color:var(--muted)}
+.count b{color:var(--ink)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line)}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok-s)}
+.live.paused{border-color:var(--warn-s);background:var(--warn-f)}
+.live.paused::before{background:transparent;border:2px solid var(--warn-s);width:5px;height:5px}
+.newbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 14px;background:var(--fill);border-bottom:1px solid var(--line);font-size:13.5px}
+.bulk{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--fill);font-size:13.5px}
+.btn.sm{font-size:13px;padding:4px 10px;min-height:32px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.grp td{background:var(--fill);font-size:13px}
+tr.child td:nth-child(3){padding-left:28px}
+tr.new td:first-child{box-shadow:inset 4px 0 0 var(--accent)}
+.asset b{display:block}
+.asset span{font-size:12.5px;color:var(--muted)}
+.imp{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.imp.high::before{content:"▲▲ "} .imp.med::before{content:"▲ "} .imp.low::before{content:"△ "}
+.imp.basic{border:1px dashed var(--warn-s);padding:0 4px;border-radius:4px}
+.lvl.low::before{content:"○ "}
+.lvl.low{border-color:var(--bad-s)}
+.status{font-size:12.5px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.hint{font-size:12.5px;color:var(--muted);display:block;margin-top:2px}
+.empty{padding:40px 16px;text-align:center}
+.empty h3{margin:0 0 6px;font-size:1.05rem}
+.empty p{margin:0 0 12px;color:var(--muted)}
+.err{padding:20px 16px}
+.edhide{display:none !important}
+@media (max-width:760px){
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{border-bottom:1px solid var(--line);padding:8px 4px}
+  td{border:0;padding:3px 10px}
+  td[data-l]::before{content:attr(data-l);display:inline-block;width:90px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  td[data-l="Asset"]::before,td[data-l="Group"]::before{display:none}
+  td[data-l="Rank"]:empty{display:none}
+  td .hint{display:inline;margin-left:6px}
+  tr.child td:nth-child(3){padding-left:10px}
+  .toolbar .sel:not(.search){flex:1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>W02 Alert queue · wireframe</h1>
+    <p class="lede">Triage every alert, ranked by line impact, with correlated alerts grouped under one likely cause. New alerts are flagged without moving the row under your pointer. Low fidelity, synthetic data; states are named as the ViewModel exposes them (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>State</legend>
+      <button data-v="loading">loading</button><button data-v="live">live</button><button data-v="newItems">new items</button><button data-v="stale">stale</button><button data-v="selected">rows selected</button><button data-v="filteredEmpty">filtered empty</button><button data-v="empty">empty</button><button data-v="error">error</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L1">L1</button><button data-v="L2">L2</button><button data-v="L3">L3</button><button data-v="L4">L4</button><button data-v="L5">L5</button>
+    </fieldset>
+    <fieldset id="c-edition"><legend>Edition</legend>
+      <button data-v="full">Full</button><button data-v="community">Community</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <section class="screen" aria-label="Alert queue screen">
+    <div class="topbar">
+      <span class="chip" id="lvlchip">L0 Normal</span>
+      <span class="chip syn">SYNTHETIC DATA</span>
+      <span class="sp"></span>
+      <span>Tenant: Demo</span><span>Site: Plant A</span><span>Reliability engineer · signed in</span>
+    </div>
+    <div class="banner" id="banner" role="status"></div>
+
+    <div class="toolbar">
+      <h2>Alerts</h2>
+      <input class="sel search" type="search" placeholder="Search asset, signal or ID" aria-label="Search alerts">
+      <select class="sel" aria-label="Line"><option>All lines</option><option>Body line 1</option></select>
+      <select class="sel col-imp" aria-label="Impact"><option>Any impact</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select class="sel" aria-label="Status"><option>Open</option><option>All</option></select>
+      <select class="sel" aria-label="Trust"><option>Any trust</option><option>Low trust only</option></select>
+      <span class="count" data-states="live newItems stale selected"><b>7 alerts</b> · 5 likely causes</span>
+      <span class="count" id="sortnote"></span>
+      <span class="live" id="live" data-states="live newItems selected">Live</span>
+      <span class="live paused" data-states="stale">Live updates paused · last update 08:41 (6 min ago)</span>
+    </div>
+
+    <div class="newbar" data-states="newItems" role="status">
+      <b>2 new alerts</b> arrived and are marked in the list. The ranking is not applied yet, so rows stay where they are.
+      <button class="btn sm">Apply new ranking</button>
+    </div>
+
+    <div class="bulk" data-states="selected">
+      <b>2 selected</b>
+      <button class="btn sm">Acknowledge</button><button class="btn sm">Assign…</button><button class="btn sm">Group</button>
+      <span class="why">Approvals are never done in bulk: each draft needs its own decision in Approvals (W04).</span>
+    </div>
+
+    <div data-states="loading" style="padding:14px">
+      <div class="skel" style="width:30%"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>
+    </div>
+
+    <table data-states="live newItems stale selected" aria-label="Alerts ranked by impact">
+      <thead><tr><th><input type="checkbox" aria-label="Select all"></th><th>Rank</th><th>Asset and signal</th><th class="col-imp">Impact</th><th class="col-lt">Lead time</th><th>Trust</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td><input type="checkbox" aria-label="Select group" class="selbox"></td><td data-l="Rank">1</td><td colspan="5" data-l="Group">▾ <b>Weld Cell 4 · coolant loop</b> · 3 correlated alerts, 1 likely cause · incident INC-0042 open</td></tr>
+        <tr class="child"><td><input type="checkbox" aria-label="Select" class="selbox"></td><td data-l="Rank"></td><td data-l="Asset" class="asset"><b>Coolant flow FT-401</b><span>multivariate drift · AI summary available</span></td><td data-l="Impact"><span class="imp high">high</span></td><td data-l="Lead time">6–14 h<span class="hint">medium confidence</span></td><td data-l="Trust"><span class="lvl med">MEDIUM</span></td><td data-l="Status"><span class="status">Incident · abstained</span></td></tr>
+        <tr class="child"><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank"></td><td data-l="Asset" class="asset"><b>Return temperature TT-402</b><span>slow rise</span></td><td data-l="Impact"><span class="imp high">high</span></td><td data-l="Lead time">6–14 h</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">Grouped</span></td></tr>
+        <tr class="child"><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank"></td><td data-l="Asset" class="asset"><b>Transformer temperature TT-404</b><span>controller compensating</span></td><td data-l="Impact"><span class="imp high">high</span></td><td data-l="Lead time">6–14 h</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">Grouped</span></td></tr>
+        <tr class="new" data-states="newItems"><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank">new</td><td data-l="Asset" class="asset"><b>Quality gate · camera exposure</b><span>step change · arrived 08:47</span></td><td data-l="Impact"><span class="imp med">medium</span></td><td data-l="Lead time">1–2 d</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">New</span></td></tr>
+        <tr><td><input type="checkbox" aria-label="Select" class="selbox"></td><td data-l="Rank">2</td><td data-l="Asset" class="asset"><b>Framing robot R7 · servo temperature</b><span>trend above reference</span></td><td data-l="Impact"><span class="imp med">medium</span></td><td data-l="Lead time">12–30 h</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">Assigned · J. Doe</span></td></tr>
+        <tr><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank">3</td><td data-l="Asset" class="asset"><b>Paint booth 2 · humidity</b><span>drift within limits</span></td><td data-l="Impact"><span class="imp med">medium</span></td><td data-l="Lead time">1–3 d</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">Acknowledged</span></td></tr>
+        <tr><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank">4</td><td data-l="Asset" class="asset"><b>Cell 3 · pressure sensor PT-310</b><span>flatline · likely a sensor fault, not the machine</span></td><td data-l="Impact"><span class="imp low">low</span></td><td data-l="Lead time">—<span class="hint">not a machine trend</span></td><td data-l="Trust"><span class="lvl low">LOW</span></td><td data-l="Status"><span class="status">New · sensor check suggested</span></td></tr>
+        <tr class="new" data-states="newItems"><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank">new</td><td data-l="Asset" class="asset"><b>Conveyor C4 · motor current</b><span>noise increase · arrived 08:48</span></td><td data-l="Impact"><span class="imp low">low</span></td><td data-l="Lead time">3–6 d</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">New</span></td></tr>
+        <tr><td><input type="checkbox" aria-label="Select"></td><td data-l="Rank">5</td><td data-l="Asset" class="asset"><b>Conveyor C2 · drive vibration</b><span>broadband noise</span></td><td data-l="Impact"><span class="imp low">low</span></td><td data-l="Lead time">2–5 d</td><td data-l="Trust"><span class="lvl high">HIGH</span></td><td data-l="Status"><span class="status">New</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="empty" data-states="empty">
+      <h3>No open alerts on Plant A</h3>
+      <p>Telemetry is arriving from all 42 sensors (last reading 2 s ago), and no detector has raised an alert. This is different from having no data.</p>
+      <button class="btn">View line overview</button>
+    </div>
+    <div class="empty" data-states="filteredEmpty">
+      <h3>No alerts match these filters</h3>
+      <p>7 open alerts are hidden by "Low trust only" and "Body line 2".</p>
+      <button class="btn">Clear filters</button>
+    </div>
+    <div class="err" data-states="error">
+      <div class="callout bad"><h4>Alerts could not be loaded</h4>The alert service did not respond. Alerting itself is not affected; this screen will retry automatically. <button class="btn sm">Retry now</button><span class="hint">Trace ID for engineers: 4bf92f3577b34da6</span></div>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.1 row W02 and the real-time rules in section 14. Requirements: LIM-3, DET-3, UI-7; acceptance criteria UI-AC-2, UI-AC-6, UI-AC-8.</p>
+    <ul>
+      <li>Ranking is by line impact (LIM-3); the hero alert is first (UI-AC-2). Impact and trust use shape and text as well as tone, never colour alone.</li>
+      <li>Correlated alerts collapse under one likely cause, and the header counts likely causes, not just alerts (alarm fatigue, section 14).</li>
+      <li>Community edition: there is no line impact model (LIM-3 is Full), and no lead-time estimate (DET-3 is Full), so those columns are hidden and alerts sort by newest. The Community build must render without the Full impact port (ADR-028).</li>
+      <li>From L4 impact is marked "basic" because only basic checks run (03 section 13.2).</li>
+      <li>Open question: should the "sensor check suggested" hint appear here or only in W03 and W05? Pending domain review (UO-4).</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"live",level:"L0",edition:"full"};
+const banners={L0:null,
+  L1:["warn","Reduced explanation quality: a smaller model is in use."],
+  L2:["warn","Explanations use templates. Alerts and evidence are unaffected."],
+  L3:["bad","Knowledge search unavailable: guidance is unverified and a higher approval tier is required."],
+  L4:["bad","Basic detection only (thresholds). Impact ranking uses basic checks."],
+  L5:["bad","Offline: edge alerts only. Changes will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.hidden=!el.dataset.states.split(" ").includes(S.state));
+  const b=document.getElementById("banner"),m=banners[S.level];
+  if(m){b.className="banner "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;}else b.hidden=true;
+  document.getElementById("lvlchip").textContent=S.level==="L0"?"L0 Normal":S.level+" Degraded";
+  const basic=["L4","L5"].includes(S.level);
+  document.querySelectorAll(".imp").forEach(e=>{e.classList.toggle("basic",basic);
+    if(!e.dataset.t)e.dataset.t=e.textContent; e.textContent=basic?e.dataset.t+" · basic":e.dataset.t;});
+  const com=S.edition==="community";
+  document.querySelectorAll('.col-imp,td[data-l="Impact"],.col-lt,td[data-l="Lead time"]').forEach(e=>e.classList.toggle("edhide",com));
+  document.getElementById("sortnote").textContent=com?"Sorted by newest · impact ranking and lead time are Full only (LIM-3, DET-3)":"Sorted by line impact";
+  document.querySelectorAll(".selbox").forEach(c=>c.checked=S.state==="selected");
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.fallbackLevel = "+S.level+" · edition = "+S.edition;
+  for(const [k,id] of [["state","c-state"],["level","c-level"],["edition","c-edition"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["level","c-level"],["edition","c-edition"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;render();}));
+render();
+</script>
+</body>
+</html>

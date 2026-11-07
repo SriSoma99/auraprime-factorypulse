@@ -1,0 +1,303 @@
+<!--
+title: "Wireframe W10: Benchmark console"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../04-architecture-definition.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W10 Benchmark Console</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Source: 02 section 6.1 (W10 row); SIM-1 to SIM-5. Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.full{border-color:var(--note);color:var(--note);background:transparent;font-weight:600}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;padding:14px;border-bottom:1px solid var(--line)}
+.kpi-card{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--fill)}
+.kpi-card .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kpi-card .val{font-size:1.35rem;font-weight:700;font-family:var(--mono)}
+.kpi-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.kpi-card.ok{border-color:var(--ok-s);background:var(--ok-f)}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--fill)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:var(--fill)}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.ok{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.running{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+
+.btn{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12px;border-width:1px}
+
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--accent)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W10 Simulator Benchmark Console (SIM-4)</h1>
+    <p class="lede">
+      Deterministic plant simulator benchmark harness: replays calibrated industrial failure scenarios (coolant restrictions, sensor zero-drift, bearing wear)
+      and evaluates detection lead times, abstention accuracy, and regression scores across releases.
+    </p>
+  </div>
+
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="normal" aria-pressed="true">latest_results</button>
+      <button type="button" data-state="running" aria-pressed="false">scenario_running</button>
+      <button type="button" data-state="compare" aria-pressed="false">version_comparison</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useBenchmarkViewModel()</code></span>
+  </aside>
+
+  <main class="screen" id="screen" role="region" aria-label="Benchmark Console Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC BENCHMARK</span>
+      <span class="chip full">FULL EVALUATION SUITE</span>
+      <span class="kv">Harness: <b>APP-21 Plant Simulator</b></span>
+      <span class="sp"></span>
+      <button class="btn sm primary" onclick="runScenario()">▶ Run Benchmark Suite (10 Scenarios)</button>
+    </header>
+
+    <div id="banner-running" style="padding:14px;background:var(--warn-f);border-bottom:1px solid var(--warn-s)" hidden>
+      <div style="display:flex;justify-content:space-between;font-weight:600;font-size:13.5px">
+        <span>Running Scenario #4: Weld Cell 4 Coolant Drift (Noise: 2.5%, Flow: -18% decay)...</span>
+        <span class="mono">Sim Tick: 4,820 / 10,000 (48%)</span>
+      </div>
+      <div class="bar"><i style="width:48%"></i></div>
+      <span class="kv">Measuring time-to-alert, causal engine hypothesis rank, and sensor trust separation.</span>
+    </div>
+
+    <section class="kpi-row" aria-label="Benchmark KPIs">
+      <div class="kpi-card ok">
+        <div class="lbl">Diagnosis Accuracy (AC-H1..5)</div>
+        <div class="val">98.6%</div>
+        <div class="sub">+1.2% vs v1 legacy benchmark</div>
+      </div>
+
+      <div class="kpi-card ok">
+        <div class="lbl">Detection Lead Time</div>
+        <div class="val">8.4 Hours</div>
+        <div class="sub">Prior to threshold alarm trip</div>
+      </div>
+
+      <div class="kpi-card ok">
+        <div class="lbl">Abstention Rate (UI-8)</div>
+        <div class="val">100% Correct</div>
+        <div class="sub">Zero ungrounded hallucinations</div>
+      </div>
+
+      <div class="kpi-card ok">
+        <div class="lbl">False Alarm Rejection</div>
+        <div class="val">96.2%</div>
+        <div class="sub">Sensor faults separated (TRU-1)</div>
+      </div>
+    </section>
+
+    <!-- Standard Scenario Results View -->
+    <div id="view-scenarios">
+      <table class="tbl" aria-label="Scenarios table">
+        <thead>
+          <tr>
+            <th>Scenario ID &amp; Target</th>
+            <th>Failure Mode Injected</th>
+            <th>Lead Time Observed</th>
+            <th>Hypothesis #1 Match</th>
+            <th>Abstention &amp; Cite Check</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>SCN-HERO-01</b><br><span class="kv">Weld Cell 4 Coolant Loop</span></td>
+            <td>Strainer scale restriction (FM-COOL-02)</td>
+            <td class="mono">9.2 hours</td>
+            <td>Coolant restriction (58%)</td>
+            <td>Correct: Recommended flow check</td>
+            <td><span class="status-badge ok">PASSED (AC-H1)</span></td>
+          </tr>
+          <tr>
+            <td><b>SCN-SEN-02</b><br><span class="kv">Weld Cell 4 Flow Sensor</span></td>
+            <td>Flowmeter zero-drift bias (-15%)</td>
+            <td class="mono">Immediate</td>
+            <td>Sensor fault (88%)</td>
+            <td>Correct: Filtered from machine alert</td>
+            <td><span class="status-badge ok">PASSED (AC-H2)</span></td>
+          </tr>
+          <tr>
+            <td><b>SCN-MECH-03</b><br><span class="kv">Framing Robot KUKA KR500</span></td>
+            <td>Axis 3 Harmonic drive gear wear</td>
+            <td class="mono">14.6 hours</td>
+            <td>Drive backlash wear (74%)</td>
+            <td>Correct: Procedure cited</td>
+            <td><span class="status-badge ok">PASSED (AC-H3)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Version Comparison View -->
+    <div id="view-compare" hidden>
+      <div style="padding:12px 14px;background:var(--fill);border-bottom:1px solid var(--line);font-size:13px">
+        <b>Comparative Analysis:</b> Release candidate <code>v2.0-rc3</code> vs Legacy Baseline <code>v1.0</code>.
+      </div>
+      <table class="tbl" aria-label="Version comparison table">
+        <thead>
+          <tr>
+            <th>Benchmark Metric</th>
+            <th>v1.0 Baseline (Legacy)</th>
+            <th>v2.0-rc3 (Current)</th>
+            <th>Delta &amp; Improvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Early Warning Lead Time</td>
+            <td class="mono">0.5 hours (Threshold trip)</td>
+            <td class="mono">8.4 hours (Multivariate drift)</td>
+            <td><b style="color:var(--ok-s)">+7.9 hours earlier</b></td>
+          </tr>
+          <tr>
+            <td>Sensor Fault Rejection</td>
+            <td class="mono">0% (Tripped false alert)</td>
+            <td class="mono">96.2% (Trust layer separated)</td>
+            <td><b style="color:var(--ok-s)">+96.2% fewer false stops</b></td>
+          </tr>
+          <tr>
+            <td>Citations &amp; Provenance</td>
+            <td class="mono">None (Unverified text)</td>
+            <td class="mono">100% Cited from OEM manuals</td>
+            <td><b style="color:var(--ok-s)">100% audit compliant</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="footerbar">
+      <span>Simulator Engine: <code>SimPy + Synthetic Physics Generator</code> &bull; Seed: Deterministic Random</span>
+      <span><a href="#">Export Benchmark Report (PDF/JSON)</a> &bull; <a href="#">Runbook RB-06: ML Fallback Verification</a></span>
+    </footer>
+
+  </main>
+
+  <ul class="notes">
+    <li><b>SIM-4:</b> Deterministic scenario replay verifies that new intelligence models never regress on the golden dataset.</li>
+    <li><b>Differentiating Showcase:</b> Quantifies early lead times and false-alarm suppression against the v1 legacy baseline.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const bannerRunning = document.getElementById('banner-running');
+  const viewScenarios = document.getElementById('view-scenarios');
+  const viewCompare = document.getElementById('view-compare');
+
+  let state = 'normal';
+
+  function render(){
+    bannerRunning.hidden = true;
+    viewScenarios.hidden = false;
+    viewCompare.hidden = true;
+
+    if (state === 'running') {
+      bannerRunning.hidden = false;
+    }
+    if (state === 'compare') {
+      viewScenarios.hidden = true;
+      viewCompare.hidden = false;
+    }
+  }
+
+  window.runScenario = function(){
+    state = 'running';
+    document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+    document.querySelector('.controls button[data-state="running"]').setAttribute('aria-pressed', 'true');
+    render();
+  };
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      state = btn.dataset.state;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

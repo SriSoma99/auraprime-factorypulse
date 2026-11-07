@@ -1,0 +1,37 @@
+# Personal Claude Code settings (per machine)
+.claude/settings.local.json
+# Abandoned experiment: headless Penpot keeper (see ADR-027 amendment 2026-10-03)
+tools/penpot-keeper/
+node_modules/
+# Local development secrets and generated files (ADR-030)
+infra/local/.env.local
+dist/
+.expo/
+coverage/
+playwright-report/
+test-results/
+apps/app/.env.local
+# Generated SBOM manifests (CI uploads them as artifacts)
+build/
+# AI assistant chats and prompts stay on this machine, never in the repository (Claude, Gemini, Codex, Copilot, OpenCode, Antigravity and similar).
+# The local pre-push hook also refuses any push whose commits add such files.
+.claude/projects/
+.claude/todos/
+.claude/history*
+.claude/shell-snapshots/
+.claude/sessions/
+.gemini/
+.codex/
+.copilot/
+.opencode/
+.antigravity*/
+.cursor/
+.aider*
+.specstory/
+.continue/
+*.jsonl
+*transcript*
+*chat-history*
+*chat_history*
+*conversation-log*
+*conversation_log*

@@ -1,0 +1,451 @@
+<!--
+title: "Wireframe W13: Learning review"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../05-data-architecture.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+  - ../adr/ADR-031-case-memory-and-gated-learning.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W13 Learning Review &amp; Evaluation Gate</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05). Neutral placeholders;
+   Source: 02 section 6.1 (W13 row); ADR-031; LRN-5 to LRN-7; AC-H10. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+/* wireframe test switcher */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.full{border-color:var(--note);color:var(--note);background:transparent;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+
+/* tabs */
+.tabnav{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--fill)}
+.tabnav button{border:0;border-right:1px solid var(--line);background:transparent;padding:10px 18px;font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+.tabnav button.active{background:var(--paper);color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent);margin-bottom:-1px}
+.tabnav button .badge{font-size:11px;font-family:var(--mono);padding:1px 6px;border-radius:999px;background:var(--line);margin-left:6px}
+
+/* lesson card */
+.lesson-card{border:1px solid var(--line);border-radius:8px;padding:14px;margin:14px;background:var(--paper);display:grid;gap:10px}
+.lesson-card .hdr{display:flex;justify-content:space-between;align-items:baseline}
+.lesson-card h3{margin:0;font-size:1.05rem}
+.lesson-card .body{border-left:3px solid var(--accent);padding-left:12px;margin:6px 0;font-size:14px}
+.lesson-card .meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.lesson-card .actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+
+/* buttons */
+.btn{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.danger{border-color:var(--bad-s);color:var(--bad-s);background:var(--paper)}
+.btn.sm{padding:4px 10px;font-size:12px;border-width:1px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--fill)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:hover td{background:var(--fill)}
+.tbl .mono{font-family:var(--mono);font-size:12.5px}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.status-badge.active{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.staged{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+.status-badge.rejected{background:var(--bad-f);color:var(--bad-s);border:1px solid var(--bad-s)}
+.status-badge.reverted{background:var(--fill2);color:var(--muted);border:1px solid var(--line)}
+
+.cite-link{color:var(--accent);text-decoration:none;font-weight:600}
+.cite-link:hover{text-decoration:underline}
+
+/* skeleton & callouts */
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:40px}
+.callout{padding:24px;text-align:center;color:var(--muted)}
+.callout.bad{border:1px solid var(--bad-s);background:var(--bad-f);border-radius:8px;margin:14px;color:var(--ink)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W13 Learning Review &amp; Evaluation Gate (ADR-031)</h1>
+    <p class="lede">
+      Self-improving closed loop: human approval for model-drafted lessons (LRN-6), episodic case memory index (LRN-5),
+      and benchmark replay evaluation gate (LRN-7) that prevents regression before any learning batch activates.
+    </p>
+  </div>
+
+  <!-- State Switcher -->
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>View / Section (<code>vm.tab</code>):</legend>
+      <button type="button" data-tab="lessons" aria-pressed="true">pending_lessons</button>
+      <button type="button" data-tab="cases" aria-pressed="false">case_memory</button>
+      <button type="button" data-tab="batches" aria-pressed="false">evaluation_gate_batches</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>ViewModel State (<code>vm.state</code>):</legend>
+      <button type="button" data-state="normal" aria-pressed="true">normal</button>
+      <button type="button" data-state="loading" aria-pressed="false">loading</button>
+      <button type="button" data-state="empty" aria-pressed="false">empty</button>
+      <button type="button" data-state="permission_denied" aria-pressed="false">permission_denied</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useLearningReviewViewModel()</code></span>
+  </aside>
+
+  <!-- Screen Frame -->
+  <main class="screen" id="screen" role="region" aria-label="Learning Review Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12, ADR-019">SYNTHETIC DATA</span>
+      <span class="chip full">FULL EDITION</span>
+      <span class="kv">Tenant: <b>Demo Plant Org</b></span>
+      <span class="kv">Role: <b>Reliability Engineer (ACT-4)</b></span>
+      <span class="sp"></span>
+      <span class="chip ai" title="UI-8, AGT-7">AI SYNTHESIS ACTIVE</span>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tabnav" aria-label="Learning tabs">
+      <button type="button" class="active" id="btn-tab-lessons">Gated Lessons Queue <span class="badge" style="background:var(--warn-s);color:var(--paper)" id="badge-lessons">2</span></button>
+      <button type="button" id="btn-tab-cases">Episodic Case Memory <span class="badge">38</span></button>
+      <button type="button" id="btn-tab-batches">Evaluation Gate Batches <span class="badge">4</span></button>
+    </nav>
+
+    <!-- Permission Denied View -->
+    <div id="view-denied" class="callout bad" hidden>
+      <h4>403 Access Denied: Reliability Engineer Role Required</h4>
+      <p>Lesson review and evaluation gate management require human approval by a Reliability Engineer (ACT-4). API keys and autonomous agents cannot self-approve learning updates (Invariant 2, ADR-031).</p>
+    </div>
+
+    <!-- Loading Skeleton View -->
+    <div id="view-loading" style="padding:14px" hidden>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+      <div class="skel l"></div>
+    </div>
+
+    <!-- Empty View -->
+    <div id="view-empty" class="callout" hidden>
+      <h3>Queue is empty</h3>
+      <p>No draft lessons pending human review. All closed incidents have been reviewed or archived.</p>
+    </div>
+
+    <!-- Tab Content 1: Pending Gated Lessons (LRN-6) -->
+    <div id="content-lessons">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--line);background:var(--fill);font-size:13px" class="kv">
+        <b>Invariant Rule:</b> Model-synthesized lessons enter retrieval only after human sign-off. Rejected drafts are kept in audit (APP-20) and never used.
+      </div>
+
+      <!-- Lesson 1 Card -->
+      <article class="lesson-card">
+        <div class="hdr">
+          <div>
+            <span class="chip ai">[AI-Generated Lesson Draft]</span>
+            <span class="status-badge staged">PENDING APPROVAL</span>
+          </div>
+          <span class="kv mono">Source: <a href="W03-incident-detail.html" class="cite-link">Case #INC-2026-0042 (Weld Cell 4)</a></span>
+        </div>
+        <h3>Coolant Restriction Discrimination: Delta-T Rise vs Flow Drift</h3>
+        <div class="body">
+          <b>Operational Rule:</b> When return-temperature rises faster than flow rate degrades while pump motor amperage remains constant, prioritize inline strainer inspection over sensor replacement. In Case #INC-2026-0042, an ultrasonic flow check verified pump output within 10 minutes, separating strainer clogging from sensor zero-drift before thermal shutdown tripped.
+        </div>
+        <div class="meta">
+          <span>Asset Class: <b>Robotic Resistance Weld Gun (WC-4)</b></span>
+          <span>Failure Mode: <b>FM-COOL-02 (Coolant loop scale buildup)</b></span>
+          <span>Discriminating Check: <b>Portable ultrasonic check + strainer swab</b></span>
+          <span>Drafted: <b>2026-10-05 08:30 UTC</b></span>
+        </div>
+        <div class="actions">
+          <button class="btn primary sm" onclick="approveLesson(1)">✓ Approve into Corpus</button>
+          <button class="btn danger sm" onclick="rejectLesson(1)">✗ Reject Draft</button>
+          <span class="sp"></span>
+          <input type="text" placeholder="Reason (required on rejection)" style="padding:4px 8px;font-size:12px;border:1px solid var(--line);border-radius:4px;flex:1;max-width:320px">
+        </div>
+      </article>
+
+      <!-- Lesson 2 Card -->
+      <article class="lesson-card">
+        <div class="hdr">
+          <div>
+            <span class="chip ai">[AI-Generated Lesson Draft]</span>
+            <span class="status-badge staged">PENDING APPROVAL</span>
+          </div>
+          <span class="kv mono">Source: <a href="#" class="cite-link">Case #INC-2026-0038 (Stamping Press 1)</a></span>
+        </div>
+        <h3>Hydraulic Valve Sticking Signature in Ambient High Heat</h3>
+        <div class="body">
+          <b>Operational Rule:</b> Proportional directional valve sluggishness occurring exclusively between 14:00–16:00 during summer shifts indicates valve spool clearance pinch rather than hydraulic pump cavitation. Verified by optical encoder timestamp lag.
+        </div>
+        <div class="meta">
+          <span>Asset Class: <b>500T Hydraulic Transfer Press</b></span>
+          <span>Failure Mode: <b>FM-HYD-07 (Spool varnish binding)</b></span>
+          <span>Discriminating Check: <b>Manual spool stroke resistance check</b></span>
+          <span>Drafted: <b>2026-10-04 17:15 UTC</b></span>
+        </div>
+        <div class="actions">
+          <button class="btn primary sm" onclick="approveLesson(2)">✓ Approve into Corpus</button>
+          <button class="btn danger sm" onclick="rejectLesson(2)">✗ Reject Draft</button>
+          <span class="sp"></span>
+          <input type="text" placeholder="Reason (required on rejection)" style="padding:4px 8px;font-size:12px;border:1px solid var(--line);border-radius:4px;flex:1;max-width:320px">
+        </div>
+      </article>
+    </div>
+
+    <!-- Tab Content 2: Episodic Case Memory Index (LRN-5) -->
+    <div id="content-cases" hidden>
+      <table class="tbl" aria-label="Case memory index">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Asset &amp; Cell</th>
+            <th>Signals &amp; Trust</th>
+            <th>Separating Check</th>
+            <th>Confirmed Cause</th>
+            <th>Outcome &amp; MTTR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono"><a href="W03-incident-detail.html" class="cite-link">INC-2026-0042</a></td>
+            <td><b>Weld Cell 4</b><br><span class="kv">Robotic Welder</span></td>
+            <td>Flow: <span class="mono">MED</span>, Temp: <span class="mono">HIGH</span><br><span class="kv">Return temp +4.2°C/hr</span></td>
+            <td>Ultrasonic flow reading + strainer swab</td>
+            <td>Coolant loop scale restriction (FM-COOL-02)</td>
+            <td><span class="status-badge active">RESOLVED</span><br><span class="kv">MTTR: 28 min</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><a href="#" class="cite-link">INC-2026-0038</a></td>
+            <td><b>Press Line 1</b><br><span class="kv">Transfer Press 500T</span></td>
+            <td>Pressure: <span class="mono">HIGH</span>, Temp: <span class="mono">HIGH</span><br><span class="kv">Cycle lag +180ms</span></td>
+            <td>Spool stroke drag test</td>
+            <td>Hydraulic valve spool varnish (FM-HYD-07)</td>
+            <td><span class="status-badge active">RESOLVED</span><br><span class="kv">MTTR: 45 min</span></td>
+          </tr>
+          <tr>
+            <td class="mono"><a href="#" class="cite-link">INC-2026-0029</a></td>
+            <td><b>Framing Robot 2</b><br><span class="kv">KUKA KR500</span></td>
+            <td>Vibration: <span class="mono">HIGH</span>, Current: <span class="mono">HIGH</span><br><span class="kv">Axis 3 1.2 mm/s RMS</span></td>
+            <td>Stroboscopic gear tooth check</td>
+            <td>Harmonic drive tooth wear (FM-MECH-04)</td>
+            <td><span class="status-badge active">RESOLVED</span><br><span class="kv">MTTR: 110 min</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab Content 3: Evaluation Gate Batches (LRN-7) -->
+    <div id="content-batches" hidden>
+      <div style="padding:12px 14px;border-bottom:1px solid var(--line);background:var(--fill);font-size:13px" class="kv">
+        <b>Evaluation Gate (SIM-4 Harness):</b> Replays staged update batches against the golden test benchmark. A batch is activated only if accuracy and lead-time metrics remain within tolerance. Any active batch can be rolled back with one click.
+      </div>
+      <table class="tbl" aria-label="Learning batches table">
+        <thead>
+          <tr>
+            <th>Batch ID</th>
+            <th>Contents</th>
+            <th>Benchmark Replay Result</th>
+            <th>Regression Check</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">BATCH-2026-10-05</td>
+            <td>2 lessons, 4 prior updates, 1 case</td>
+            <td>Accuracy: <b>98.4%</b> (+0.6%)<br>Lead time err: <b>42 min</b> (-8 min)</td>
+            <td><span class="status-badge active">PASSED TOLERANCE</span></td>
+            <td><span class="status-badge staged">STAGED</span></td>
+            <td><button class="btn primary sm">Activate Batch</button></td>
+          </tr>
+          <tr>
+            <td class="mono">BATCH-2026-09-28</td>
+            <td>5 lessons, 12 prior updates</td>
+            <td>Accuracy: <b>97.8%</b> (+1.2%)<br>Lead time err: <b>50 min</b></td>
+            <td><span class="status-badge active">PASSED TOLERANCE</span></td>
+            <td><span class="status-badge active">ACTIVE</span></td>
+            <td><button class="btn danger sm">Rollback Batch</button></td>
+          </tr>
+          <tr>
+            <td class="mono">BATCH-2026-09-14</td>
+            <td>3 lessons, 8 prior updates</td>
+            <td>Accuracy: <b>91.2%</b> (-6.4%)<br>False alarms: <b>+14%</b></td>
+            <td><span class="status-badge rejected">REGRESSION DETECTED</span></td>
+            <td><span class="status-badge rejected">GATE REJECTED</span></td>
+            <td><button class="btn sm" disabled>Cannot Activate</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footerbar">
+      <span>Self-Improving Loop: <code>APP-12 Learning &amp; Verification</code> &bull; Invariant 6: Tier 1 Async Only</span>
+      <span><a href="#">Audit Ledger (APP-20)</a> &bull; <a href="#">Runbook RB-11: Config Rollback</a></span>
+    </footer>
+
+  </main>
+
+  <ul class="notes">
+    <li><b>LRN-5 (Episodic Case Memory):</b> Closed incidents become structured cases cited by the causal engine, not prompt injections.</li>
+    <li><b>LRN-6 (Gated Lessons):</b> Model drafts operational lessons; human approval required; rejected drafts kept for compliance audit.</li>
+    <li><b>LRN-7 (Evaluation Gate):</b> Update batches replayed on the simulator benchmark before activation; 1-click rollback supported.</li>
+    <li><b>Invariant 2:</b> Approval controls disabled for non-human or unprivileged tokens.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const tabLessons = document.getElementById('btn-tab-lessons');
+  const tabCases = document.getElementById('btn-tab-cases');
+  const tabBatches = document.getElementById('btn-tab-batches');
+
+  const contentLessons = document.getElementById('content-lessons');
+  const contentCases = document.getElementById('content-cases');
+  const contentBatches = document.getElementById('content-batches');
+
+  const viewLoading = document.getElementById('view-loading');
+  const viewEmpty = document.getElementById('view-empty');
+  const viewDenied = document.getElementById('view-denied');
+
+  let currentTab = 'lessons';
+  let currentState = 'normal';
+
+  function render(){
+    contentLessons.hidden = true;
+    contentCases.hidden = true;
+    contentBatches.hidden = true;
+    viewLoading.hidden = true;
+    viewEmpty.hidden = true;
+    viewDenied.hidden = true;
+
+    [tabLessons, tabCases, tabBatches].forEach(b => b.className = '');
+
+    if (currentState === 'loading') {
+      viewLoading.hidden = false;
+      return;
+    }
+    if (currentState === 'empty') {
+      viewEmpty.hidden = false;
+      return;
+    }
+    if (currentState === 'permission_denied') {
+      viewDenied.hidden = false;
+      return;
+    }
+
+    if (currentTab === 'lessons') {
+      contentLessons.hidden = false;
+      tabLessons.className = 'active';
+    } else if (currentTab === 'cases') {
+      contentCases.hidden = false;
+      tabCases.className = 'active';
+    } else if (currentTab === 'batches') {
+      contentBatches.hidden = false;
+      tabBatches.className = 'active';
+    }
+  }
+
+  window.approveLesson = function(id){
+    alert('Lesson #' + id + ' approved! Added to staged learning batch for benchmark replay.');
+  };
+  window.rejectLesson = function(id){
+    alert('Lesson #' + id + ' rejected. Archived in audit ledger with rejection reason.');
+  };
+
+  document.querySelectorAll('.controls button[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      currentTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-state]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-state]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      currentState = btn.dataset.state;
+      render();
+    });
+  });
+
+  [tabLessons, tabCases, tabBatches].forEach(t => {
+    t.addEventListener('click', () => {
+      if (t === tabLessons) currentTab = 'lessons';
+      if (t === tabCases) currentTab = 'cases';
+      if (t === tabBatches) currentTab = 'batches';
+      document.querySelectorAll('.controls button[data-tab]').forEach(b => {
+        b.setAttribute('aria-pressed', b.dataset.tab === currentTab ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

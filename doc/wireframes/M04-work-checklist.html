@@ -1,0 +1,268 @@
+<!--
+title: "Wireframe M04: Work checklist"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-027-penpot-design-tool.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M04 Work Checklist</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-03). Neutral placeholders, not design tokens; final values live in apps/app/src/ui/tokens.ts (02 section 9).
+   Source of truth: 02 sections 6.2 (M04 row), 7.4, 10, 12; 03 section 12. Synthetic data only (ADR-019). */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:80ch}
+/* wireframe controls (not part of the screen) */
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+/* screen frame */
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+.chip.ai{border-color:var(--accent);color:var(--accent);background:transparent;font-weight:600}
+.banner{padding:8px 14px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.banner b{font-family:var(--mono)}
+.banner.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.banner.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.banner.info{background:var(--fill);border-left:5px solid var(--muted)}
+.head{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.head .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.head h2{font-size:1.2rem;margin:0}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink)}
+.summary{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--fill)}
+.summary p{margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.panel{padding:14px;border-bottom:1px solid var(--line)}
+.grid .panel:first-child{border-right:1px solid var(--line)}
+.panel h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.hyp{display:grid;grid-template-columns:1.3em 1fr 3.2em 90px;gap:8px;align-items:center;font-size:14px;padding:4px 0}
+.bar{height:10px;background:var(--fill);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill2);border-right:1px solid var(--muted)}
+.trust{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.lvl{font-family:var(--mono);font-size:12px;padding:0 6px;border:1px solid var(--line);border-radius:4px}
+.lvl.med::before{content:"◐ "} .lvl.high::before{content:"● "}
+ul.ev{list-style:none;margin:0;padding:0;font-size:14px}
+ul.ev li{padding:4px 0;display:flex;gap:8px}
+ul.ev .s{font-family:var(--mono);width:1.2em;flex:none}
+.cite{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.blocked{border:1px dashed var(--bad-s);background:var(--bad-f);padding:8px 10px;border-radius:6px;font-size:13.5px;margin-top:8px}
+.decision{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.callout{border:1.5px solid var(--warn-s);background:var(--warn-f);border-radius:8px;padding:10px 12px}
+.callout.ok{border-color:var(--ok-s);background:var(--ok-f)}
+.callout.bad{border-color:var(--bad-s);background:var(--bad-f)}
+.callout h4{margin:0 0 4px;font-size:14px}
+.wo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.wo .tag{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);padding:1px 6px;border-radius:4px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.why{font-size:12.5px;color:var(--muted)}
+.timeline{padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.timeline .st{padding:2px 8px;border:1px solid var(--line);border-radius:4px;background:var(--fill)}
+.timeline .st.done{background:var(--fill2)}
+.timeline .ar{color:var(--muted)}
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent)}
+.skel{background:var(--fill);border-radius:6px;height:14px;margin:8px 0}
+.skel.l{height:60px}
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted)} .notes li{margin:3px 0}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .grid .panel:first-child{border-right:0}
+  .hyp{grid-template-columns:1.3em 1fr 3.2em 60px}
+}
+.phones{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;align-items:flex-start}
+.phone{width:340px;max-width:100%;background:var(--paper);border:2px solid var(--muted);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;min-height:680px}
+.pcap{font-size:12.5px;color:var(--note);text-align:center;margin:6px 0 0;font-family:var(--mono)}
+.status{display:flex;justify-content:space-between;padding:8px 18px 4px;font-size:12px;color:var(--muted)}
+.mtop{display:flex;align-items:center;gap:8px;padding:6px 14px 10px;border-bottom:1px solid var(--line)}
+.mtop h2{font-size:1.05rem;margin:0;flex:1}
+.mb{padding:7px 14px;font-size:13px;border-bottom:1px solid var(--line)}
+.mb.warn{background:var(--warn-f);border-left:5px solid var(--warn-s)}
+.mb.bad{background:var(--bad-f);border-left:5px solid var(--bad-s)}
+.mb.off{background:var(--fill);border-left:5px solid var(--muted)}
+.body{padding:12px 14px;display:grid;gap:10px;flex:1;align-content:start}
+.progress{height:8px;border:1px solid var(--line);border-radius:4px;background:var(--fill);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ink)}
+.step{display:grid;grid-template-columns:30px 1fr;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:14px;align-items:start}
+.step.cur{border:2px solid var(--ink)}
+.step .n{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font-size:12.5px;font-family:var(--mono)}
+.step.done .n{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.step .sub{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.safety{border:2px solid var(--warn-s);background:var(--warn-f);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.safety.unv{border-color:var(--bad-s);background:var(--bad-f)}
+.safety .cite{font-size:12.5px}
+.field{display:grid;gap:6px}
+.field label{font-size:13px;color:var(--muted)}
+.numrow{display:flex;gap:8px;align-items:center}
+.num{font:inherit;font-size:22px;width:120px;padding:8px 10px;border:1.5px solid var(--ink);border-radius:8px;background:var(--paper);color:var(--ink)}
+.unit{font-size:16px}
+.range{font-size:12.5px;color:var(--muted)}
+.photo{border:1.5px dashed var(--muted);border-radius:12px;height:110px;display:grid;place-items:center;color:var(--muted);font-size:13.5px}
+.choices{display:grid;gap:8px}
+.choice{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;min-height:48px}
+.choice.on{border-color:var(--ink);font-weight:600}
+.bigbtn{min-height:56px;font-size:16px;width:100%}
+.tabbar{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:8px 0 14px;font-size:12px;color:var(--muted)}
+.tabbar b{color:var(--ink)}
+.q{font-size:12.5px;border:1px dashed var(--warn-s);background:var(--warn-f);border-radius:8px;padding:8px 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>M04 Work checklist · wireframe</h1>
+    <p class="lede">The technician carries out the approved check step by step: confirm the asset, read the safety reminder from the approved procedure, capture the reading and a photo, and record the finding. The outcome feeds verification and learning; nothing here controls equipment. Low fidelity, synthetic data; states are named as the ViewModel exposes them (ADR-028).</p>
+  </header>
+
+  <div class="controls" aria-label="Wireframe controls">
+    <fieldset id="c-state"><legend>State</legend>
+      <button data-v="inProgress">in progress</button><button data-v="outOfRange">reading out of range</button><button data-v="submitted">submitted · verifying</button><button data-v="verified">verified</button><button data-v="reopened">reopened</button>
+    </fieldset>
+    <fieldset id="c-net"><legend>Network</legend>
+      <button data-v="online">online</button><button data-v="offline">offline</button>
+    </fieldset>
+    <fieldset id="c-level"><legend>Fallback</legend>
+      <button data-v="L0">L0</button><button data-v="L3">L3</button><button data-v="L5">L5</button>
+    </fieldset>
+    <span class="vm" id="vm" aria-live="polite"></span>
+  </div>
+
+  <div class="phones">
+    <div>
+      <section class="phone" aria-label="M04 checklist overview">
+        <div class="status"><span>09:02</span><span class="netlbl">●●● 4G</span></div>
+        <div class="mtop"><span>‹</span><h2>Inspection · Weld Cell 4</h2><span class="chip syn">SYNTHETIC</span></div>
+        <div class="mb lvlb" hidden></div>
+        <div class="mb off netbar" hidden>Offline · steps and photos are saved on this phone and sync later.</div>
+        <div class="body">
+          <div style="font-size:13px;color:var(--muted)">WO-0311 · approved by shift lead 08:52 · INC-0042</div>
+          <div class="progress" aria-label="Progress"><i id="prog" style="width:40%"></i></div>
+          <div style="font-size:13px" id="progtxt">2 of 5 steps done</div>
+          <div class="step done"><span class="n">✓</span><span><b>Confirm asset</b><span class="sub">QR scanned · Weld Cell 4 coolant loop (M05)</span></span></div>
+          <div class="step done"><span class="n">✓</span><span><b>Safety reminder read</b><span class="sub">Lockout procedure SOP-WC-07 v4</span></span></div>
+          <div class="step" id="s3"><span class="n">3</span><span><b>Portable flow reading</b><span class="sub" id="s3sub">at the coolant return line</span></span></div>
+          <div class="step" id="s4"><span class="n">4</span><span><b>Inspect strainer, add photo</b><span class="sub">Manual section 4.2</span></span></div>
+          <div class="step" id="s5"><span class="n">5</span><span><b>Record finding and submit</b><span class="sub">feeds verification (LRN-1, LRN-2)</span></span></div>
+          <div class="callout ok" data-states="verified"><h4>Verified</h4>Flow and temperature stayed within reference for the required good cycles. Incident closed.</div>
+          <div class="callout bad" data-states="reopened"><h4>Reopened</h4>Drift returned before enough good cycles. A new diagnosis has started; you may get a follow-up check.</div>
+        </div>
+        <div class="tabbar"><span>Alerts</span><span>Approvals</span><b>Work</b><span>Sync<span class="syncN"></span></span></div>
+      </section>
+      <p class="pcap">M04 overview · vm.state = <span class="st"></span></p>
+    </div>
+
+    <div>
+      <section class="phone" aria-label="M04 current step">
+        <div class="status"><span>09:04</span><span class="netlbl">●●● 4G</span></div>
+        <div class="mtop"><span>‹</span><h2>Step 3 of 5 · Flow reading</h2></div>
+        <div class="mb lvlb" hidden></div>
+        <div class="mb off netbar" hidden>Offline · saved on this phone.</div>
+        <div class="body">
+          <div class="safety" id="safety">
+            <b>⚠ Safety · from the approved procedure</b><br>
+            Isolate and lock out the coolant pump before opening the strainer housing. Wear eye protection; coolant may be hot.
+            <div class="cite">SOP-WC-07 v4, step 3 · effective 2026-01-15</div>
+          </div>
+          <div class="why">This app does not isolate or control equipment. Follow your site lockout procedure.</div>
+          <div class="field" data-states="inProgress outOfRange">
+            <label for="flow">Portable flow reading</label>
+            <div class="numrow"><input id="flow" class="num" inputmode="decimal" value="18.4"><span class="unit">L/min</span></div>
+            <span class="range" id="rangetxt">Reference 24–30 L/min. Below reference supports a restriction.</span>
+            <div class="q" data-states="outOfRange"><b>Check the value.</b> 184 L/min is outside what this flow meter can read (0–60 L/min). Did you mean 18.4?</div>
+          </div>
+          <div class="field" data-states="inProgress outOfRange">
+            <label>Strainer photo</label>
+            <div class="photo">+ Take photo (compressed before upload)</div>
+          </div>
+          <div class="field" data-states="inProgress outOfRange">
+            <label>Finding</label>
+            <div class="choices">
+              <div class="choice on">◉ Strainer partly blocked</div>
+              <div class="choice">○ Strainer clean</div>
+              <div class="choice">○ Other (describe)</div>
+            </div>
+          </div>
+          <button class="btn primary bigbtn" data-states="inProgress outOfRange" id="submit">Save step</button>
+          <div class="callout ok" data-states="submitted verified reopened"><h4 id="subh">Outcome submitted 09:11</h4><span id="subtxt">Finding, reading and photo are attached to INC-0042. The incident closes only after the drift reverses for the required good cycles.</span></div>
+        </div>
+        <div class="tabbar"><span>Alerts</span><span>Approvals</span><b>Work</b><span>Sync<span class="syncN"></span></span></div>
+      </section>
+      <p class="pcap">M04 step · vm.state = <span class="st"></span></p>
+    </div>
+  </div>
+
+  <footer class="notes">
+    <p>Implements 02 section 6.2 row M04, the mobile rules in section 12 and the verification design in 03 section 12. Requirements: UI-5, LRN-1 (Community), LRN-2 (Full); acceptance criteria UI-AC-1, UI-AC-10.</p>
+    <ul>
+      <li>Safety reminders are quoted only from approved, versioned procedures and always show their citation. At L3 retrieval is down, so the reminder is shown from the last known good version and flagged unverified (03 section 13.2).</li>
+      <li>Readings are checked against the instrument range and the reference range; reference values are synthetic and come from configuration and the asset registry, not the design.</li>
+      <li>Offline: steps, readings and photos queue with idempotency keys; notes merge on sync, approvals follow server-wins (02 section 12).</li>
+      <li>Wording of safety text is pending domain review (UO-4).</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const S={state:"inProgress",net:"online",level:"L0"};
+const banners={L0:null,L3:["bad","Guidance unverified · tier 2 required."],L5:["bad","Offline: edge alerts only. Will sync."]};
+function render(){
+  document.querySelectorAll("[data-states]").forEach(el=>el.hidden=!el.dataset.states.split(" ").includes(S.state));
+  const m=banners[S.level], off=S.net==="offline"||S.level==="L5";
+  document.querySelectorAll(".lvlb").forEach(b=>{ if(m){b.className="mb lvlb "+m[0];b.innerHTML="<b>"+S.level+"</b> "+m[1];b.hidden=false;} else b.hidden=true; });
+  document.querySelectorAll(".netbar").forEach(b=>b.hidden=!off);
+  document.querySelectorAll(".netlbl").forEach(b=>b.textContent=off?"no signal":"●●● 4G");
+  const sf=document.getElementById("safety");
+  sf.className="safety"+(S.level==="L3"?" unv":"");
+  sf.querySelector(".cite").textContent=S.level==="L3"?"UNVERIFIED · last known good: SOP-WC-07 v4, step 3 · check the current procedure on site":"SOP-WC-07 v4, step 3 · effective 2026-01-15";
+  const done=["submitted","verified","reopened"].includes(S.state);
+  document.getElementById("prog").style.width=done?"100%":"40%";
+  document.getElementById("progtxt").textContent=done?"5 of 5 steps done":"2 of 5 steps done";
+  ["s3","s4","s5"].forEach((id,i)=>{const e=document.getElementById(id);
+    e.className="step"+(done?" done":(i===0?" cur":""));
+    e.querySelector(".n").textContent=done?"✓":String(i+3);});
+  document.getElementById("s3sub").textContent=done?"18.4 L/min · below reference":"at the coolant return line";
+  document.getElementById("flow").value=S.state==="outOfRange"?"184":"18.4";
+  document.getElementById("subh").textContent=off&&S.state==="submitted"?"Outcome saved · waiting to sync":"Outcome submitted 09:11";
+  document.querySelectorAll(".syncN").forEach(e=>e.textContent=off&&S.state==="submitted"?" · 3":"");
+  document.querySelectorAll(".st").forEach(e=>e.textContent=S.state);
+  document.getElementById("vm").textContent="vm.state = "+S.state+" · vm.network = "+S.net+" · vm.fallbackLevel = "+S.level;
+  for(const [k,id] of [["state","c-state"],["net","c-net"],["level","c-level"]])
+    document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===S[k]));
+}
+for(const [k,id] of [["state","c-state"],["net","c-net"],["level","c-level"]])
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.addEventListener("click",()=>{S[k]=x.dataset.v;render();}));
+render();
+</script>
+</body>
+</html>

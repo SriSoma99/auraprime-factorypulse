@@ -1,0 +1,25 @@
+{
+  "name": "@fp/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --fileParallelism=false"
+  },
+  "dependencies": {
+    "@fp/config": "workspace:*",
+    "@fp/db": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "pg": "^8.23.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3",
+    "@fp/synthetic-data": "workspace:*"
+  }
+}

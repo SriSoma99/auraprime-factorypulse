@@ -1,0 +1,280 @@
+<!--
+title: Technology architecture view
+status: draft
+edition: community
+related:
+  - ../07-technology-architecture.md
+  - ../06-application-architecture.md
+  - ../09-messaging.md
+-->
+<title>AuraPrime FactoryPulse Technology Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Same visual language as application-architecture.html. Source of truth: doc/07 sections 4, 5.1 and 9; doc/06 section 3. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --red-f:#fbe3e1; --red-s:#c8483d; --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50; --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2; --purple-f:#ebe3f7; --purple-s:#8a6cc4;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px;margin:0}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:1000px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:11.5px;fill:var(--muted)}
+svg .id{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .ed{font-family:var(--mono);font-size:10px;font-weight:500;fill:var(--teal);text-anchor:end}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg rect{stroke-width:1.5}
+.zone{stroke-width:1.5}
+.red{fill:var(--red-f);stroke:var(--red-s)}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.purple{fill:var(--purple-f);stroke:var(--purple-s)}
+.card{fill:var(--card);stroke:var(--grey-s)}
+.dashed{stroke-dasharray:5 4}
+.ln{fill:none;stroke:var(--arrow);stroke-width:1.5}
+.ln.dash{stroke-dasharray:5 4}
+.sw-red{background:var(--red-f);border-color:var(--red-s)}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-purple{background:var(--purple-f);border-color:var(--purple-s)}
+footer{font-size:13px;color:var(--muted)}
+footer ul{margin:6px 0 0;padding-left:20px}
+.sw-grey{background:var(--grey-f);border-color:var(--grey-s)}
+svg .tp{font-family:var(--mono);font-size:12px;font-weight:500;text-anchor:start}
+svg .st{text-anchor:start}
+svg .en{text-anchor:end}
+svg .ch{font-family:var(--mono);font-size:11.5px}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Technology Architecture</h1>
+  <p>Top: the network zones and the five conduits between them. The platform reads from the plant and never writes control commands back. Bottom: how the same system runs on the developer desktop (ENV-D), as deployable units in a local Kubernetes cluster.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-grey"></i>Plant and external</span>
+  <span><i class="sw-blue"></i>Platform zone</span>
+  <span><i class="sw-green"></i>Internet-facing DMZ · app namespace</span>
+  <span><i class="sw-amber"></i>Data namespace</span>
+  <span><i class="sw-purple"></i>Observability namespace</span>
+  <span><b>1–5</b> conduit · dashed: telemetry</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 45 1200 720" role="img" aria-label="AuraPrime FactoryPulse technology architecture: zones 0 to 2 plant control, zone 3 plant DMZ with edge agent, Mosquitto and edge buffer, platform zone with ingest gateway, services, data stores, observability and MCP client gateway, internet-facing DMZ with API gateway, MCP server and web, and external users and systems, joined by five conduits; below, the developer desktop with a local Kubernetes cluster and namespaces apps, data, observability and test.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+  <rect class="zone grey dashed" x="20" y="60" width="170" height="280" rx="8"/>
+  <text class="lbl" x="30" y="78">ZONE 0–2 · CONTROL</text>
+  <text class="cap st" x="30" y="94">out of scope</text>
+  <rect class="zone grey" x="205" y="60" width="190" height="280" rx="8"/>
+  <text class="lbl" x="215" y="78">ZONE 3 · PLANT DMZ</text>
+  <text class="cap st" x="215" y="94">site edge</text>
+  <rect class="zone blue" x="410" y="60" width="400" height="280" rx="8"/>
+  <text class="lbl" x="420" y="78">ZONE P · PLATFORM</text>
+  <text class="cap st" x="420" y="94">private network · default deny</text>
+  <rect class="zone green" x="825" y="60" width="170" height="280" rx="8"/>
+  <text class="lbl" x="835" y="78">ZONE I · DMZ</text>
+  <text class="cap st" x="835" y="94">internet-facing</text>
+  <rect class="zone grey dashed" x="1010" y="60" width="170" height="280" rx="8"/>
+  <text class="lbl" x="1020" y="78">EXTERNAL</text>
+  <rect class="grey dashed" x="35" y="120" width="140" height="66" rx="5"/>
+  <text class="t" x="105" y="149">PLCs, sensors</text>
+  <text class="s" x="105" y="166">controllers</text>
+  <text class="cap" x="105" y="215">platform never writes</text>
+  <text class="cap" x="105" y="230">control commands</text>
+  <rect class="card" x="220" y="112" width="160" height="66" rx="5"/>
+  <text class="t" x="300" y="132.5">Edge Agent †</text>
+  <text class="s" x="300" y="149.5">read-only</text>
+  <text class="id" x="300" y="166.5">APP-01 · DU-01</text>
+  <rect class="card" x="220" y="192" width="160" height="58" rx="5"/>
+  <text class="t" x="300" y="217">Mosquitto</text>
+  <text class="s" x="300" y="234">site MQTT broker</text>
+  <rect class="card" x="220" y="264" width="160" height="58" rx="5"/>
+  <text class="t" x="300" y="280.5">Edge buffer †</text>
+  <text class="s" x="300" y="297.5">on-disk queue</text>
+  <text class="id" x="300" y="314.5">DS-05</text>
+  <rect class="card" x="425" y="112" width="170" height="66" rx="5"/>
+  <text class="t" x="510" y="132.5">Ingest Gateway</text>
+  <text class="s" x="510" y="149.5">MQTT to Kafka</text>
+  <text class="id" x="510" y="166.5">APP-02 · DU-02</text>
+  <rect class="card" x="615" y="112" width="180" height="66" rx="5"/>
+  <text class="t" x="705" y="132.5">Observability</text>
+  <text class="s" x="705" y="149.5">OTel Collector † · Grafana †</text>
+  <text class="id" x="705" y="166.5">APP-14 · DU-16</text>
+  <rect class="card" x="425" y="195" width="370" height="58" rx="5"/>
+  <text class="t" x="610" y="220">Services and data stores</text>
+  <text class="s" x="610" y="237">Tier 0 and Tier 1 · service identities · mTLS</text>
+  <rect class="card" x="425" y="267" width="170" height="58" rx="5"/>
+  <text class="t" x="510" y="292">Kafka · PostgreSQL</text>
+  <text class="s" x="510" y="309">MinIO † · schema registry †</text>
+  <rect class="card" x="615" y="267" width="180" height="58" rx="5"/>
+  <text class="t" x="705" y="283.5">MCP Client Gateway</text>
+  <text class="s" x="705" y="300.5">allow-listed egress</text>
+  <text class="id" x="705" y="317.5">APP-16 · DU-13</text>
+  <rect class="card" x="840" y="112" width="140" height="66" rx="5"/>
+  <text class="t" x="910" y="132.5">API Gateway</text>
+  <text class="s" x="910" y="149.5">OAuth 2.1 · rate limits</text>
+  <text class="id" x="910" y="166.5">APP-17/18/19/25</text>
+  <rect class="card" x="840" y="192" width="140" height="58" rx="5"/>
+  <text class="t" x="910" y="208.5">MCP Server</text>
+  <text class="s" x="910" y="225.5">default-deny tools</text>
+  <text class="id" x="910" y="242.5">APP-15</text>
+  <rect class="card" x="840" y="264" width="140" height="58" rx="5"/>
+  <text class="t" x="910" y="280.5">Web</text>
+  <text class="s" x="910" y="297.5">operations UI</text>
+  <text class="id" x="910" y="314.5">APP-22</text>
+  <rect class="grey dashed" x="1025" y="112" width="140" height="90" rx="5"/>
+  <text class="t" x="1095" y="153">Users and apps</text>
+  <text class="s" x="1095" y="170">external agents</text>
+  <rect class="grey dashed" x="1025" y="232" width="140" height="90" rx="5"/>
+  <text class="t" x="1095" y="273">External MCP</text>
+  <text class="s" x="1095" y="290">servers and CMMS</text>
+  <path class="ln" d="M175 153H218" marker-end="url(#ah)"/>
+  <text class="lbl" x="190" y="145" style="font-size:12px;font-weight:500">1</text>
+  <path class="ln" d="M300 178V190" marker-end="url(#ah)"/>
+  <path class="ln" d="M380 221H402V145H423" marker-end="url(#ah)"/>
+  <text class="lbl" x="400" y="105" style="font-size:12px;font-weight:500">2</text>
+  <path class="ln" d="M510 178V193" marker-end="url(#ah)"/>
+  <path class="ln dash" d="M705 195V180" marker-end="url(#ah)"/>
+  <path class="ln" d="M510 253V265" marker-end="url(#ah)"/>
+  <path class="ln" d="M705 253V265" marker-end="url(#ah)"/>
+  <path class="ln" d="M1025 157H982" marker-end="url(#ah)"/>
+  <text class="lbl" x="996" y="148" style="font-size:12px;font-weight:500">3</text>
+  <path class="ln" d="M910 192V180" marker-end="url(#ah)"/>
+  <path class="ln" d="M840 145H815V224H797" marker-end="url(#ah)"/>
+  <path class="ln" d="M795 296H812V333H1095V324" marker-end="url(#ah)"/>
+  <text class="lbl" x="950" y="328" style="font-size:12px;font-weight:500">4</text>
+  <text class="lbl" x="780" y="248" style="font-size:12px;font-weight:500">5</text>
+  <rect class="zone grey" x="20" y="355" width="1160" height="80" rx="8"/>
+  <text class="lbl" x="30" y="373">CONDUITS · 07 §4 · IEC 62443 ZONES AND CONDUITS, PURDUE-INSPIRED</text>
+  <rect class="card" x="35" y="382" width="220" height="44" rx="5"/>
+  <text class="t" x="145" y="400">1 · Plant to edge</text>
+  <text class="s" x="145" y="417">read-only · no inbound</text>
+  <rect class="card" x="264" y="382" width="220" height="44" rx="5"/>
+  <text class="t" x="374" y="400">2 · Edge to platform</text>
+  <text class="s" x="374" y="417">outbound-initiated · mTLS · replay</text>
+  <rect class="card" x="493" y="382" width="220" height="44" rx="5"/>
+  <text class="t" x="603" y="400">3 · Internet to gateway</text>
+  <text class="s" x="603" y="417">TLS · OAuth 2.1 · keys · rate limits</text>
+  <rect class="card" x="722" y="382" width="220" height="44" rx="5"/>
+  <text class="t" x="832" y="400">4 · Platform to external</text>
+  <text class="s" x="832" y="417">APP-16 only · allow-list · pinned</text>
+  <rect class="card" x="951" y="382" width="220" height="44" rx="5"/>
+  <text class="t" x="1061" y="400">5 · Inside the platform</text>
+  <text class="s" x="1061" y="417">default deny · identities · mTLS</text>
+  <rect class="zone grey" x="20" y="450" width="1160" height="300" rx="8"/>
+  <text class="lbl" x="30" y="468">ENV-D · DEVELOPER DESKTOP</text>
+  <text class="cap st" x="30" y="484">07 §5.1 · everything runs locally; sizing is configuration (OQ-4)</text>
+  <rect class="zone card" x="35" y="490" width="905" height="250" rx="8"/>
+  <text class="lbl" x="45" y="508">LOCAL KUBERNETES †</text>
+  <rect class="zone green" x="50" y="515" width="875" height="85" rx="6"/>
+  <text class="lbl" x="60" y="531">NAMESPACE APPS</text>
+  <rect class="card" x="60" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="128" y="556">ingest-gateway</text>
+  <rect class="card" x="203" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="271" y="556">stream-processor</text>
+  <rect class="card" x="346" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="414" y="556">intel-core</text>
+  <rect class="card" x="489" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="557" y="556">knowledge-svc</text>
+  <rect class="card" x="632" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="700" y="556">agent-orchestrator</text>
+  <rect class="card" x="775" y="540" width="136" height="24" rx="4"/>
+  <text class="ch" x="843" y="556">case-svc</text>
+  <rect class="card" x="60" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="128" y="586">governance-svc</text>
+  <rect class="card" x="203" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="271" y="586" style="font-size:9.5px">fallback-controller †</text>
+  <rect class="card" x="346" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="414" y="586">model-gateway †</text>
+  <rect class="card" x="489" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="557" y="586">api-gateway</text>
+  <rect class="card" x="632" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="700" y="586">mcp-server</text>
+  <rect class="card" x="775" y="570" width="136" height="24" rx="4"/>
+  <text class="ch" x="843" y="586">web</text>
+  <rect class="zone amber" x="50" y="610" width="300" height="120" rx="6"/>
+  <text class="lbl" x="60" y="626">NAMESPACE DATA</text>
+  <rect class="card" x="60" y="636" width="280" height="24" rx="4"/>
+  <text class="ch" x="200" y="652">PostgreSQL · Timescale · pgvector</text>
+  <rect class="card" x="60" y="666" width="280" height="24" rx="4"/>
+  <text class="ch" x="200" y="682">Kafka KRaft · schema registry †</text>
+  <rect class="card" x="60" y="696" width="280" height="24" rx="4"/>
+  <text class="ch" x="200" y="712">MinIO † · model registry DU-17</text>
+  <rect class="zone purple" x="360" y="610" width="280" height="120" rx="6"/>
+  <text class="lbl" x="370" y="626">NAMESPACE OBSERVABILITY</text>
+  <rect class="card" x="370" y="636" width="260" height="24" rx="4"/>
+  <text class="ch" x="500" y="652">OTel Collector †</text>
+  <rect class="card" x="370" y="666" width="260" height="24" rx="4"/>
+  <text class="ch" x="500" y="682">Tempo · Loki · Prometheus †</text>
+  <rect class="card" x="370" y="696" width="260" height="24" rx="4"/>
+  <text class="ch" x="500" y="712">Grafana †</text>
+  <rect class="zone grey" x="650" y="610" width="275" height="120" rx="6"/>
+  <text class="lbl" x="660" y="626">NAMESPACE TEST</text>
+  <rect class="card" x="660" y="636" width="255" height="24" rx="4"/>
+  <text class="ch" x="787.5" y="652">simulator · DU-18</text>
+  <rect class="card" x="660" y="666" width="255" height="24" rx="4"/>
+  <text class="ch" x="787.5" y="682">chaos tools †</text>
+  <rect class="card" x="660" y="696" width="255" height="24" rx="4"/>
+  <text class="ch" x="787.5" y="712">load generator †</text>
+  <text class="lbl" x="955" y="508">ON THE HOST</text>
+  <rect class="card" x="955" y="520" width="210" height="62" rx="5"/>
+  <text class="t" x="1060" y="538.5">Local LLM and embeddings †</text>
+  <text class="s" x="1060" y="555.5">host or container</text>
+  <text class="id" x="1060" y="572.5">reached only via APP-26</text>
+  <rect class="card" x="955" y="595" width="210" height="62" rx="5"/>
+  <text class="t" x="1060" y="613.5">Edge simulation</text>
+  <text class="s" x="1060" y="630.5">container</text>
+  <text class="id" x="1060" y="647.5">DU-01 against simulated site</text>
+  <rect class="card" x="955" y="670" width="210" height="62" rx="5"/>
+  <text class="t" x="1060" y="688.5">Expo dev client</text>
+  <text class="s" x="1060" y="705.5">device or emulator</text>
+  <text class="id" x="1060" y="722.5">DU-15 mobile</text>
+</svg>
+</div>
+
+<footer>
+  <p>Sources: doc/07 section 4 (zones and conduits), 5.1 (desktop decomposition) and 9 (application to technology matrix); doc/06 section 3 (deployable units DU-01 to DU-18); doc/09 section 6 (Mosquitto at the site or DMZ boundary). The cloud validation environment (ENV-C) is still a choice between options C1 to C3, pending the TO-1 cost spike, so it is not drawn.</p>
+  <ul>
+    <li>Open point: conduit 2 is "outbound-initiated only", but in doc/09 APP-02 in the platform subscribes to the site Mosquitto broker, which means the platform opens the connection. Whether the site broker bridges outward or APP-02 connects inward needs a decision.</li>
+    <li>Open point (OI-5): doc/07 section 5.1 does not yet place Mosquitto or the MCP client gateway (DU-13) on the desktop, and ENV-D sizing rows for Kafka are pending (TO-2).</li>
+    <li>† Target design, not in the code yet: Edge Agent and edge buffer, local Kubernetes, the fallback-controller and model-gateway deployables, OTel Collector, Tempo, Loki, Prometheus, Grafana, MinIO, schema registry, local LLM, chaos tools, load generator. mTLS and OAuth 2.1 are also not built.</li>
+    <li>What runs today: Docker Compose (<code>infra/local</code>) with PostgreSQL, Mosquitto and Kafka, and the services as local Node processes or containers.</li>
+  </ul>
+</footer>
+</main>

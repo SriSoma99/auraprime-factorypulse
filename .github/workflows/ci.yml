@@ -1,0 +1,116 @@
+name: AuraPrime FactoryPulse CI & Supply Chain Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  security-events: write
+
+jobs:
+  validate:
+    name: Typecheck & Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 12.8.1
+
+      - name: Install Monorepo Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Monorepo Typecheck
+        run: pnpm typecheck
+
+      # Same local stack as development (ADR-030): per-run random secrets, synthetic data only.
+      - name: Start Local Stack
+        run: |
+          pnpm local:init
+          pnpm local:up
+
+      - name: Migrate and Seed Synthetic Data
+        run: pnpm db:reset
+
+      - name: Unit & Integration Tests (all workspaces)
+        run: pnpm test
+
+  container-security-and-sbom:
+    name: Build OCI Containers, Generate Syft SBOM & Sign with Cosign (NFR-S5)
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Cosign (Sigstore)
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Build Local Container Image (API Gateway)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: |
+            APP_NAME=api-gateway
+          push: false
+          load: true
+          tags: auraprime-factorypulse/api-gateway:latest
+
+      # build/ is gitignored, so it does not exist in a fresh checkout.
+      - name: Prepare SBOM output directory
+        run: mkdir -p build
+
+      - name: Generate Software Bill of Materials (SBOM) with Syft (NFR-S5)
+        uses: anchore/sbom-action@v0
+        with:
+          image: auraprime-factorypulse/api-gateway:latest
+          format: cyclonedx-json
+          output-file: ./build/sbom.cyclonedx.json
+
+      - name: Generate SPDX SBOM Manifest
+        uses: anchore/sbom-action@v0
+        with:
+          image: auraprime-factorypulse/api-gateway:latest
+          format: spdx-json
+          output-file: ./build/sbom.spdx.json
+
+      - name: Scan Image for Vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0, pinned by SHA
+        with:
+          image-ref: auraprime-factorypulse/api-gateway:latest
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      # Keyless signing (OIDC via id-token: write). The SBOMs are signed as blobs and the
+      # bundles are uploaded with them. Image signing needs a registry push (G-6, pending).
+      - name: Sign SBOMs (Cosign)
+        run: |
+          for f in ./build/sbom.cyclonedx.json ./build/sbom.spdx.json; do
+            cosign sign-blob --yes --bundle "$f.sigstore.json" "$f"
+          done
+
+      - name: Archive SBOM Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: auraprime-factorypulse-sbom-manifests
+          path: ./build/*.json
+          retention-days: 90

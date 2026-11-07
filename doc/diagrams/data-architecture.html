@@ -1,0 +1,305 @@
+<!--
+title: Data architecture view
+status: draft
+edition: community
+related:
+  - ../05-data-architecture.md
+  - ../06-application-architecture.md
+  - ../09-messaging.md
+-->
+<title>AuraPrime FactoryPulse Data Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Same visual language as application-architecture.html. Source of truth: doc/05 sections 2, 3, 4 and 7. */
+:root{
+  --bg:#f4f6f8; --ink:#14202b; --muted:#566573; --line:#c9d3dc; --card:#ffffff;
+  --red-f:#fbe3e1; --red-s:#c8483d; --blue-f:#dbe8fb; --blue-s:#5b8fd9;
+  --green-f:#d9f0dc; --green-s:#3f9a50; --amber-f:#fbe9c8; --amber-s:#cf9633;
+  --grey-f:#e6e8ea; --grey-s:#8f99a2; --purple-f:#ebe3f7; --purple-s:#8a6cc4;
+  --teal:#23897c; --arrow:#4b6a88;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --ink:#e6edf3; --muted:#9fb0c0; --line:#2b3a4a; --card:#151e2a;
+  --red-f:#3d1d1b; --red-s:#e0675c; --blue-f:#1b2f4d; --blue-s:#5b8fd9;
+  --green-f:#173a22; --green-s:#4aa35a; --amber-f:#4a3615; --amber-s:#d9a03f;
+  --grey-f:#252c33; --grey-s:#6b7681; --purple-f:#2b2140; --purple-s:#a68ae0;
+  --teal:#4cc3b3; --arrow:#8fb0d0; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:24px 48px;margin:0}
+main{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+header h1{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:600;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted);max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:16px;height:12px;border-radius:3px;border:1.5px solid;display:inline-block}
+.legend b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.diagram svg{display:block;min-width:1000px;width:100%;height:auto}
+svg text{font-family:var(--sans);fill:var(--ink);font-size:13px;text-anchor:middle}
+svg .t{font-weight:600}
+svg .s{font-size:11.5px;fill:var(--muted)}
+svg .id{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .ed{font-family:var(--mono);font-size:10px;font-weight:500;fill:var(--teal);text-anchor:end}
+svg .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.06em;fill:var(--teal);text-anchor:start}
+svg .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg rect{stroke-width:1.5}
+.zone{stroke-width:1.5}
+.red{fill:var(--red-f);stroke:var(--red-s)}
+.blue{fill:var(--blue-f);stroke:var(--blue-s)}
+.green{fill:var(--green-f);stroke:var(--green-s)}
+.amber{fill:var(--amber-f);stroke:var(--amber-s)}
+.grey{fill:var(--grey-f);stroke:var(--grey-s)}
+.purple{fill:var(--purple-f);stroke:var(--purple-s)}
+.card{fill:var(--card);stroke:var(--grey-s)}
+.dashed{stroke-dasharray:5 4}
+.ln{fill:none;stroke:var(--arrow);stroke-width:1.5}
+.ln.dash{stroke-dasharray:5 4}
+.sw-red{background:var(--red-f);border-color:var(--red-s)}
+.sw-blue{background:var(--blue-f);border-color:var(--blue-s)}
+.sw-green{background:var(--green-f);border-color:var(--green-s)}
+.sw-amber{background:var(--amber-f);border-color:var(--amber-s)}
+.sw-purple{background:var(--purple-f);border-color:var(--purple-s)}
+footer{font-size:13px;color:var(--muted)}
+footer ul{margin:6px 0 0;padding-left:20px}
+.sw-grey{background:var(--grey-f);border-color:var(--grey-s)}
+svg .tp{font-family:var(--mono);font-size:12px;font-weight:500;text-anchor:start}
+svg .st{text-anchor:start}
+svg .en{text-anchor:end}
+svg .ch{font-family:var(--mono);font-size:11.5px}
+</style>
+
+<main>
+<header>
+  <h1>AuraPrime FactoryPulse Data Architecture</h1>
+  <p>The six data stores, and inside PostgreSQL the nine schema groups with their key entities. The arrows follow one reading from the asset hierarchy to telemetry, an alert, an incident with cited evidence and a draft work order, and on to the audit chain and the learning loop.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i class="sw-grey"></i>Reference and model metadata</span>
+  <span><i class="sw-red"></i>Telemetry and alerts (alert path)</span>
+  <span><i class="sw-blue"></i>Diagnosis, knowledge, governance</span>
+  <span><i class="sw-green"></i>Platform</span>
+  <span><i class="sw-purple"></i>Operations</span>
+  <span>arrow: relationship from the conceptual model</span>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 45 1200 760" role="img" aria-label="AuraPrime FactoryPulse data architecture: six data stores, and PostgreSQL schema groups ref, tel, intel, plat, case, know, ops, gov and ml with key entities. Relationships run from tenant and asset hierarchy to telemetry and alerts, alert to incident, incident to hypotheses, evidence, work orders, approvals and outcomes, evidence to knowledge chunks, outcomes to the knowledge graph, and incidents to the audit chain.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--arrow)"/>
+    </marker>
+  </defs>
+  <rect class="zone amber" x="20" y="60" width="1160" height="120" rx="8"/>
+  <text class="lbl" x="30" y="78">DATA STORES</text>
+  <text class="cap st" x="30" y="94">consolidated on PostgreSQL (ADR-003) · all six used by both editions, all run on the desktop</text>
+  <rect class="card" x="35" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="125" y="124">PostgreSQL</text>
+  <text class="s" x="125" y="141">+ Timescale + pgvector</text>
+  <text class="id" x="125" y="158">DS-01 · structured data</text>
+  <rect class="card" x="225" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="315" y="124">Kafka (KRaft)</text>
+  <text class="s" x="315" y="141">+ schema registry †</text>
+  <text class="id" x="315" y="158">DS-02 · events · DLQ</text>
+  <rect class="card" x="415" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="505" y="124">Object store †</text>
+  <text class="s" x="505" y="141">MinIO † local · cloud bucket</text>
+  <text class="id" x="505" y="158">DS-03 · docs · evidence</text>
+  <rect class="card" x="605" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="695" y="124">Telemetry stores</text>
+  <text class="s" x="695" y="141">traces · logs · metrics</text>
+  <text class="id" x="695" y="158">DS-04 · via OTel</text>
+  <rect class="card" x="795" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="885" y="124">Edge buffer †</text>
+  <text class="s" x="885" y="141">on-disk queue</text>
+  <text class="id" x="885" y="158">DS-05 · store and forward</text>
+  <rect class="card" x="985" y="104" width="180" height="64" rx="5"/>
+  <text class="t" x="1075" y="124">Cache, rate limits</text>
+  <text class="s" x="1075" y="141">in-process + DS-01</text>
+  <text class="id" x="1075" y="158">DS-06 · Valkey optional</text>
+  <path class="ln dash" d="M125 168V193"/>
+  <rect class="zone amber" x="20" y="195" width="1160" height="530" rx="8"/>
+  <text class="lbl" x="30" y="213">DS-01 · SCHEMA GROUPS</text>
+  <text class="cap st" x="215" y="213">key entities and relationships from the conceptual model (05 §3) · each entity has one owning app</text>
+  <rect class="zone grey" x="35" y="240" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="45" y="258">REF · REFERENCE</text>
+  <text class="cap en" x="395" y="382">APP-18 tenant · APP-06 line model</text>
+  <rect class="card" x="45" y="284" width="64" height="24" rx="4"/>
+  <text class="ch" x="77" y="300">Tenant</text>
+  <rect class="card" x="123" y="284" width="48" height="24" rx="4"/>
+  <text class="ch" x="147" y="300">Site</text>
+  <rect class="card" x="185" y="284" width="48" height="24" rx="4"/>
+  <text class="ch" x="209" y="300">Line</text>
+  <rect class="card" x="247" y="284" width="68" height="24" rx="4"/>
+  <text class="ch" x="281" y="300">Station</text>
+  <rect class="card" x="329" y="284" width="56" height="24" rx="4"/>
+  <text class="ch" x="357" y="300">Asset</text>
+  <rect class="card" x="317" y="316" width="80" height="24" rx="4"/>
+  <text class="ch" x="357" y="332">Sensor</text>
+  <rect class="card" x="151" y="316" width="96" height="24" rx="4"/>
+  <text class="ch" x="199" y="332">LineModel</text>
+  <rect class="card" x="151" y="348" width="150" height="24" rx="4"/>
+  <text class="ch" x="226" y="364">LimitSpec · limits</text>
+  <path class="ln" d="M109 296H121" marker-end="url(#ah)"/>
+  <path class="ln" d="M171 296H183" marker-end="url(#ah)"/>
+  <path class="ln" d="M233 296H245" marker-end="url(#ah)"/>
+  <path class="ln" d="M315 296H327" marker-end="url(#ah)"/>
+  <path class="ln" d="M357 308V314" marker-end="url(#ah)"/>
+  <rect class="zone red" x="415" y="240" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="425" y="258">TEL · TELEMETRY</text>
+  <text class="cap st" x="425" y="382">APP-02 raw · APP-03 validated, hypertables</text>
+  <rect class="card" x="425" y="284" width="150" height="24" rx="4"/>
+  <text class="ch" x="500" y="300">TelemetryEnvelope</text>
+  <rect class="card" x="589" y="284" width="90" height="24" rx="4"/>
+  <text class="ch" x="634" y="300">DeadLetter</text>
+  <rect class="card" x="425" y="316" width="150" height="24" rx="4"/>
+  <text class="ch" x="500" y="332">TelemetryPoint</text>
+  <rect class="card" x="425" y="348" width="170" height="24" rx="4"/>
+  <text class="ch" x="510" y="364">TelemetryAggregate</text>
+  <path class="ln" d="M500 308V314" marker-end="url(#ah)"/>
+  <path class="ln" d="M500 340V346" marker-end="url(#ah)"/>
+  <path class="ln" d="M397 328H423" marker-end="url(#ah)"/>
+  <rect class="zone blue" x="795" y="240" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="805" y="258">INTEL · INTELLIGENCE</text>
+  <text class="cap st" x="805" y="382">APP-04 · 05 · 06 · 12</text>
+  <rect class="card" x="805" y="284" width="120" height="24" rx="4"/>
+  <text class="ch" x="865" y="300">FeatureWindow</text>
+  <rect class="red" x="1075" y="284" width="80" height="24" rx="4"/>
+  <text class="ch" x="1115" y="300">Alert</text>
+  <rect class="card" x="805" y="316" width="140" height="24" rx="4"/>
+  <text class="ch" x="875" y="332">TrustAssessment</text>
+  <rect class="card" x="955" y="316" width="130" height="24" rx="4"/>
+  <text class="ch" x="1020" y="332">ImpactEstimate</text>
+  <rect class="card" x="805" y="348" width="100" height="24" rx="4"/>
+  <text class="ch" x="855" y="364">AssetPrior</text>
+  <path class="ln" d="M357 284V232H1115V282" marker-end="url(#ah)"/>
+  <text class="cap st" x="365" y="228">raises</text>
+  <rect class="zone green" x="35" y="400" width="370" height="150" rx="6"/>
+  <text class="lbl en" x="395" y="418">PLAT · PLATFORM</text>
+  <text class="cap st" x="45" y="542">APP-15 · 17 · 18 · 19 · 25</text>
+  <rect class="card" x="45" y="444" width="70" height="24" rx="4"/>
+  <text class="ch" x="80" y="460">Project</text>
+  <rect class="card" x="125" y="444" width="100" height="24" rx="4"/>
+  <text class="ch" x="175" y="460">UserAccount</text>
+  <rect class="card" x="235" y="444" width="120" height="24" rx="4"/>
+  <text class="ch" x="295" y="460">RoleAssignment</text>
+  <rect class="card" x="45" y="476" width="64" height="24" rx="4"/>
+  <text class="ch" x="77" y="492">ApiKey</text>
+  <rect class="card" x="119" y="476" width="96" height="24" rx="4"/>
+  <text class="ch" x="167" y="492">UsageEvent</text>
+  <rect class="card" x="225" y="476" width="84" height="24" rx="4"/>
+  <text class="ch" x="267" y="492">ToolGrant</text>
+  <rect class="card" x="45" y="508" width="130" height="24" rx="4"/>
+  <text class="ch" x="110" y="524">WebhookEndpoint</text>
+  <rect class="card" x="185" y="508" width="130" height="24" rx="4"/>
+  <text class="ch" x="250" y="524">WebhookDelivery</text>
+  <path class="ln" d="M100 308V442" marker-end="url(#ah)"/>
+  <rect class="zone blue" x="415" y="400" width="370" height="150" rx="6"/>
+  <text class="lbl en" x="775" y="418">CASE · INCIDENTS</text>
+  <text class="cap st" x="425" y="542">APP-08 · 09 · 10 · 11 · 12 · work orders are drafts</text>
+  <rect class="card" x="425" y="444" width="80" height="24" rx="4"/>
+  <text class="ch" x="465" y="460">Incident</text>
+  <rect class="card" x="519" y="444" width="96" height="24" rx="4"/>
+  <text class="ch" x="567" y="460">Hypothesis</text>
+  <rect class="card" x="629" y="444" width="110" height="24" rx="4"/>
+  <text class="ch" x="684" y="460">EvidenceItem</text>
+  <rect class="card" x="425" y="476" width="90" height="24" rx="4"/>
+  <text class="ch" x="470" y="492">WorkOrder</text>
+  <rect class="card" x="529" y="476" width="84" height="24" rx="4"/>
+  <text class="ch" x="571" y="492">Approval</text>
+  <rect class="card" x="627" y="476" width="130" height="24" rx="4"/>
+  <text class="ch" x="692" y="492">EvidenceLedger</text>
+  <rect class="card" x="425" y="508" width="80" height="24" rx="4"/>
+  <text class="ch" x="465" y="524">Outcome</text>
+  <path class="ln" d="M505 456H517" marker-end="url(#ah)"/>
+  <path class="ln" d="M615 456H627" marker-end="url(#ah)"/>
+  <path class="ln" d="M465 468V474" marker-end="url(#ah)"/>
+  <path class="ln" d="M515 488H527" marker-end="url(#ah)"/>
+  <path class="ln" d="M425 456H420V520H423" marker-end="url(#ah)"/>
+  <path class="ln" d="M1115 308V395H480V442" marker-end="url(#ah)"/>
+  <text class="cap st" x="1121" y="388">opens</text>
+  <rect class="zone blue" x="795" y="400" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="805" y="418">KNOW · KNOWLEDGE</text>
+  <text class="cap st" x="805" y="542">APP-07 · versioned documents, hybrid retrieval</text>
+  <rect class="card" x="805" y="444" width="64" height="24" rx="4"/>
+  <text class="ch" x="837" y="460">Chunk</text>
+  <rect class="card" x="883" y="444" width="130" height="24" rx="4"/>
+  <text class="ch" x="948" y="460">DocumentVersion</text>
+  <rect class="card" x="1027" y="444" width="90" height="24" rx="4"/>
+  <text class="ch" x="1072" y="460">Document</text>
+  <rect class="card" x="805" y="476" width="90" height="24" rx="4"/>
+  <text class="ch" x="850" y="492">Embedding</text>
+  <rect class="card" x="909" y="476" width="110" height="24" rx="4"/>
+  <text class="ch" x="964" y="492">FailureMode</text>
+  <rect class="card" x="805" y="508" width="130" height="24" rx="4"/>
+  <text class="ch" x="870" y="524">KgNode / KgEdge</text>
+  <path class="ln" d="M1027 456H1015" marker-end="url(#ah)"/>
+  <path class="ln" d="M883 456H871" marker-end="url(#ah)"/>
+  <path class="ln" d="M837 468V474" marker-end="url(#ah)"/>
+  <path class="ln" d="M739 456H803" marker-end="url(#ah)"/>
+  <text class="cap" x="771" y="450">cites</text>
+  <path class="ln" d="M505 520H803" marker-end="url(#ah)"/>
+  <text class="cap" x="654" y="514">verified outcomes update</text>
+  <rect class="zone purple" x="35" y="560" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="45" y="578">OPS · OPERATIONS</text>
+  <text class="cap st" x="45" y="702">outbox: state and events cannot diverge</text>
+  <rect class="card" x="45" y="604" width="120" height="24" rx="4"/>
+  <text class="ch" x="105" y="620">OutboxMessage †</text>
+  <rect class="card" x="175" y="604" width="150" height="24" rx="4"/>
+  <text class="ch" x="250" y="620">IdempotencyRecord</text>
+  <rect class="card" x="45" y="636" width="110" height="24" rx="4"/>
+  <text class="ch" x="100" y="652">FallbackEvent</text>
+  <rect class="card" x="165" y="636" width="90" height="24" rx="4"/>
+  <text class="ch" x="210" y="652">CostLedger</text>
+  <rect class="card" x="265" y="636" width="70" height="24" rx="4"/>
+  <text class="ch" x="300" y="652">EvalRun</text>
+  <rect class="card" x="45" y="668" width="110" height="24" rx="4"/>
+  <text class="ch" x="100" y="684">RetrievalLog</text>
+  <rect class="zone blue" x="415" y="560" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="425" y="578">GOV · GOVERNANCE</text>
+  <text class="cap st" x="425" y="702">APP-10 policy · APP-20 audit · APP-24 models</text>
+  <rect class="card" x="425" y="604" width="120" height="24" rx="4"/>
+  <text class="ch" x="485" y="620">PolicyDecision</text>
+  <rect class="card" x="615" y="604" width="150" height="24" rx="4"/>
+  <text class="ch" x="690" y="620">AuditEvent (chain)</text>
+  <rect class="card" x="425" y="636" width="110" height="24" rx="4"/>
+  <text class="ch" x="480" y="652">PolicyVersion</text>
+  <rect class="card" x="549" y="636" width="110" height="24" rx="4"/>
+  <text class="ch" x="604" y="652">EvidencePack</text>
+  <rect class="card" x="425" y="668" width="96" height="24" rx="4"/>
+  <text class="ch" x="473" y="684">SbomRecord</text>
+  <rect class="card" x="531" y="668" width="150" height="24" rx="4"/>
+  <text class="ch" x="606" y="684">ModelRegisterEntry</text>
+  <path class="ln" d="M690 550V602" marker-end="url(#ah)"/>
+  <text class="cap st" x="696" y="580">recorded in</text>
+  <rect class="zone grey" x="795" y="560" width="370" height="150" rx="6"/>
+  <text class="lbl st" x="805" y="578">ML · MODEL METADATA</text>
+  <text class="cap st" x="805" y="702">artifacts in DS-03 · metadata here</text>
+  <rect class="card" x="805" y="604" width="110" height="24" rx="4"/>
+  <text class="ch" x="860" y="620">ModelVersion</text>
+  <rect class="card" x="925" y="604" width="100" height="24" rx="4"/>
+  <text class="ch" x="975" y="620">DriftMetric</text>
+  <path class="ln" d="M915 616H923"/>
+  <rect class="zone grey" x="20" y="740" width="1160" height="50" rx="8"/>
+  <text class="lbl" x="30" y="758">DATA RULES ON THIS VIEW</text>
+  <text class="cap st" x="30" y="776">4 tenant_id on every record and event, row-level security on · 3 only APP-20 appends AuditEvent · 7 secrets by reference, keys as hashes · is_synthetic flag</text>
+</svg>
+</div>
+
+<footer>
+  <p>Sources: doc/05 section 2 (data stores), 3 (conceptual model), 4 (entity catalog by schema group), 7 (security) and 9 (shared schema with row-level security). Retention and zones are in doc/05 section 6.</p>
+  <ul>
+    <li>Open point (OI-5, doc/09 section 9): the schema registry is not yet listed as a store in doc/05. It is shown with DS-02 here.</li>
+    <li>† Target design, not in the code yet: schema registry, object store, edge buffer, OutboxMessage.</li>
+    <li>Updated 2026-11-07: <code>ref.asset</code> and <code>ref.sensor</code> carry limits and machine state rules (ADR-039), <code>plat.role_permission</code> holds screen access (ADR-040), and <code>know.citation</code> carries document status and classification (ADR-041).</li>
+  </ul>
+</footer>
+</main>

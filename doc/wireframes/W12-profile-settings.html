@@ -1,0 +1,186 @@
+<!--
+title: "Wireframe W12: Profile and settings"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W12 Profile &amp; Preferences</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Source: 02 section 6.1 (W12 row); UI-6; Invariant 7 (safety alerts never silenced). Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+.screen{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:8px 14px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.topbar .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;font-size:12px;background:var(--fill)}
+.chip.syn{border-style:dashed;font-weight:600}
+
+.section{padding:18px 20px;border-bottom:1px solid var(--line)}
+.section h2{font-size:1.15rem;margin:0 0 4px}
+.section p{margin:0 0 14px;font-size:13.5px;color:var(--muted)}
+
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dotted var(--line)}
+.setting-row:last-child{border-bottom:none}
+.setting-label b{display:block;font-size:14px;margin-bottom:2px}
+.setting-label span{font-size:12.5px;color:var(--muted)}
+
+select, input[type="text"]{padding:6px 10px;font:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+
+.btn{font:inherit;font-size:13.5px;padding:7px 16px;border-radius:6px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--paper)}
+
+.footerbar{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.footerbar a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>W12 User Profile &amp; Preferences</h1>
+    <p class="lede">
+      Operator and engineer preferences: visual themes, plant-floor display density, and notification channels.
+      Enforces Invariant 7: safety-critical alerts cannot be silenced.
+    </p>
+  </div>
+
+  <main class="screen" role="region" aria-label="Profile and Settings Screen">
+    
+    <header class="topbar">
+      <span class="chip syn" title="BR-12">SYNTHETIC USER PROFILE</span>
+      <span class="kv">Signed in as: <b>Sri Soma (ACT-4 Reliability Engineer)</b></span>
+      <span class="sp"></span>
+      <span class="kv">Tenant: <b>Detroit Auto Works</b></span>
+    </header>
+
+    <!-- Visual Presentation -->
+    <div class="section">
+      <h2>Display &amp; Appearance</h2>
+      <p>Configure interface theme and readability for plant-floor lighting conditions.</p>
+      
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Theme Mode</b>
+          <span>Select system automatic, light, or dark mode</span>
+        </div>
+        <select id="theme-select">
+          <option value="system">System Default</option>
+          <option value="light">Light Mode (Clean Room)</option>
+          <option value="dark">Dark Mode (Plant Floor)</option>
+          <option value="contrast">High Contrast (Glare Tolerant)</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Interface Density</b>
+          <span>Adjust button size and row spacing</span>
+        </div>
+        <select>
+          <option>Compact (Desktop Engineering &amp; Charts)</option>
+          <option selected>Comfortable (Standard)</option>
+          <option>Plant Floor (Large Touch Targets &amp; Gloves)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="section">
+      <h2>Alerting &amp; Notification Rules</h2>
+      <p>Configure escalation channels and dispatch preferences.</p>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Safety-Critical Equipment Alerts (Tier 1 &amp; Tier 2)</b>
+          <span>Immediate acoustic chime and vibration dispatch</span>
+        </div>
+        <span style="font-weight:600;font-size:13px;color:var(--ok-s)">ALWAYS ACTIVE (Invariant 7)</span>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Advisory &amp; Optimization Notifications</b>
+          <span>Telemetry drift, model updates, and lesson review notices</span>
+        </div>
+        <select>
+          <option selected>Immediate Push &amp; In-App Banner</option>
+          <option>Shift Summary Digest (Every 8h)</option>
+          <option>Muted</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Quiet Hours</b>
+          <span>Mute non-critical alerts between shifts</span>
+        </div>
+        <select>
+          <option selected>Off (Active All Shifts)</option>
+          <option>22:00 – 06:00 (Third Shift)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Active Tenant Partition -->
+    <div class="section">
+      <h2>Tenant &amp; Plant Site Switcher</h2>
+      <p>Active multi-tenant database context (RLS partition).</p>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <b>Active Site Context</b>
+          <span>Switches RLS context for real-time telemetry and lines</span>
+        </div>
+        <select>
+          <option selected>Detroit Auto Works &bull; Plant A (Weld &amp; Assembly)</option>
+          <option>Detroit Auto Works &bull; Plant B (Paint Shop)</option>
+          <option>Midwest Metal Stampers &bull; Plant 1 (Press)</option>
+        </select>
+      </div>
+    </div>
+
+    <footer class="footerbar">
+      <span>Preference sync: Client-side local storage + User session store</span>
+      <button class="btn primary sm" onclick="alert('Preferences saved successfully!')">Save Preferences</button>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+document.getElementById('theme-select').addEventListener('change', function(e){
+  const val = e.target.value;
+  if (val === 'system') {
+    document.documentElement.removeAttribute('data-theme');
+  } else if (val === 'light' || val === 'dark') {
+    document.documentElement.setAttribute('data-theme', val);
+  }
+});
+</script>
+</body>
+</html>

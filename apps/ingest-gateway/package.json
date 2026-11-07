@@ -1,0 +1,30 @@
+{
+  "name": "@fp/ingest-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/gateway.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fp/config": "workspace:*",
+    "@fp/db": "workspace:*",
+    "kafkajs": "^2.2.4",
+    "mqtt": "^5.10.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@fp/synthetic-data": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

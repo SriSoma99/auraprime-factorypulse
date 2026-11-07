@@ -1,0 +1,314 @@
+<!--
+title: "Wireframe M05-M09: Mobile companion screens"
+status: draft
+edition: community
+related:
+  - ../02-ui.md
+  - ../03-technical-design.md
+  - ../adr/ADR-028-ui-mvvm-pattern.md
+  - ../adr/ADR-029-expo-universal-app.md
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M05-M09 Mobile Companion Screens</title>
+<style>
+/* Low-fidelity wireframe (ADR-027 amendment 2026-10-05).
+   Mobile companion screens: M05 Scan Asset, M06 Capture, M07 Offline Queue & Sync, M08 Mobile Notifications, M09 Sign In.
+   One Expo React Native codebase (ADR-029). Synthetic data only. */
+:root{
+  --bg:#f2f3f5; --paper:#ffffff; --ink:#1d2329; --muted:#5d6670; --line:#c7cdd3; --fill:#e6e9ec; --fill2:#d5dade;
+  --accent:#2f5d8a; --warn-f:#fff3d6; --warn-s:#a8790f; --bad-f:#fde4e1; --bad-s:#b23b2e; --ok-f:#e0f2e4; --ok-s:#2f7d45;
+  --note:#6b4fa3;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#13171b; --paper:#1b2026; --ink:#e4e8ec; --muted:#9aa4ae; --line:#36404a; --fill:#252c33; --fill2:#2f373f;
+  --accent:#7fb0e0; --warn-f:#3a2f12; --warn-s:#e0b245; --bad-f:#3d1f1b; --bad-s:#ec7a6c; --ok-f:#183323; --ok-s:#6cc487;
+  --note:#b39ae6; color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);padding:16px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:1.35rem;margin:0}
+.lede{margin:2px 0 0;color:var(--muted);max-width:85ch}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 12px;border:1px dashed var(--note);border-radius:8px;font-size:13px;color:var(--note)}
+.controls fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.controls legend{float:left;margin-right:6px;font-weight:600}
+.controls button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--note);background:transparent;color:var(--note);cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--note);color:var(--paper)}
+.vm{font-family:var(--mono);font-size:12px;color:var(--note)}
+
+/* phone bezel frame */
+.stage{display:flex;justify-content:center;padding:10px 0}
+.phone{width:100%;max-width:390px;background:var(--paper);border:2px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.08);display:flex;flex-direction:column}
+.phone-top{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--fill);font-size:11.5px;font-family:var(--mono);font-weight:700}
+.phone-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.phone-head h2{margin:0;font-size:1.1rem;flex:1}
+.phone-body{padding:16px;display:flex;flex-direction:column;gap:14px;min-height:480px}
+
+/* mobile components */
+.btn{font:inherit;font-size:15px;padding:12px 16px;border-radius:8px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;text-align:center;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.danger{border-color:var(--bad-s);color:var(--bad-s)}
+
+.card{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--fill)}
+.chip{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11.5px;background:var(--fill2);border:1px solid var(--line);font-weight:600}
+.kv{font-size:12.5px;color:var(--muted)} .kv b{color:var(--ink)}
+
+/* camera finder mockup */
+.viewfinder{height:200px;background:#0d1117;border-radius:10px;position:relative;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden}
+.viewfinder .target{width:140px;height:140px;border:2px dashed var(--accent);border-radius:8px}
+
+input[type="text"], input[type="number"], textarea{width:100%;padding:10px 12px;font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:700;font-family:var(--mono)}
+.status-badge.ok{background:var(--ok-f);color:var(--ok-s);border:1px solid var(--ok-s)}
+.status-badge.warn{background:var(--warn-f);color:var(--warn-s);border:1px solid var(--warn-s)}
+
+[hidden]{display:none !important}
+.notes{font-size:13px;color:var(--muted);padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>M05–M09 Mobile Companion Wireframes (Expo Universal App)</h1>
+    <p class="lede">
+      Field technician workflow: M05 Asset Scan, M06 Telemetry &amp; Photo Capture, M07 Offline Queue &amp; Sync, M08 Notifications, M09 Sign In.
+      Designed for one-handed 48px touch targets, offline queueing, and noisy floor environments (ADR-029).
+    </p>
+  </div>
+
+  <aside class="controls" aria-label="Wireframe test controls">
+    <fieldset>
+      <legend>Mobile Screen:</legend>
+      <button type="button" data-screen="M05" aria-pressed="true">M05 Scan Asset</button>
+      <button type="button" data-screen="M06" aria-pressed="false">M06 Capture</button>
+      <button type="button" data-screen="M07" aria-pressed="false">M07 Queue &amp; Sync</button>
+      <button type="button" data-screen="M08" aria-pressed="false">M08 Notifications</button>
+      <button type="button" data-screen="M09" aria-pressed="false">M09 Sign In</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Theme:</legend>
+      <button type="button" data-theme="system" aria-pressed="true">System</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+
+    <span class="vm">Hook: <code>useMobileCompanionViewModel()</code></span>
+  </aside>
+
+  <div class="stage">
+    <div class="phone" role="region" aria-label="Mobile Phone Container">
+      <div class="phone-top">
+        <span>09:41</span>
+        <span>AuraPrime FactoryPulse Mobile &bull; 5G</span>
+      </div>
+
+      <!-- Header -->
+      <div class="phone-head">
+        <h2 id="screen-title">M05 Scan Asset</h2>
+        <span class="chip" id="screen-chip">QR / NFC</span>
+      </div>
+
+      <!-- Screen Body -->
+      <div class="phone-body">
+        
+        <!-- M05: Scan Asset -->
+        <div id="view-m05">
+          <div class="viewfinder">
+            <div class="target"></div>
+            <div style="position:absolute;bottom:10px;font-size:12px;opacity:0.8">Align QR code or tap NFC tag on machine</div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <span class="status-badge ok">SCANNED &bull; CONFIRMED</span>
+            <h3 style="margin:6px 0 2px;font-size:1rem">Weld Cell 4 (WC-04)</h3>
+            <span class="kv">Robot: KUKA KR500 &bull; Transformer Loop B</span>
+            <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:13px">
+              <b>Active Incident:</b> <span style="color:var(--bad-s)">Coolant Restriction Drift (#INC-0042)</span>
+            </div>
+          </div>
+          <button class="btn primary" style="margin-top:14px" onclick="goTo('M06')">Start Inspection Capture &gt;</button>
+        </div>
+
+        <!-- M06: Capture -->
+        <div id="view-m06" hidden>
+          <div class="card">
+            <span class="kv">Asset: <b>Weld Cell 4 &bull; Return Line</b></span>
+            <h3 style="margin:4px 0">Ultrasonic Flow Meter Reading</h3>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Flow Rate (L/min)</label>
+            <input type="number" step="0.1" value="11.4" placeholder="Enter measured value">
+            <span class="kv" style="margin-top:2px;display:block">Normal baseline: 14.0–16.5 L/min</span>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Attach Photo (Strainer Swab)</label>
+            <button class="btn" style="border-style:dashed;width:100%">📷 Tap to Snap Photo</button>
+            <span class="kv" style="margin-top:2px;display:block">Photo: <code>strainer_swab_wc4.jpg</code> attached</span>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Technician Notes</label>
+            <textarea rows="3" placeholder="Notes on debris, discoloration, or seal condition...">Strainer mesh clogged with calcium carbonate scale. Cleaned and flushed.</textarea>
+          </div>
+          <button class="btn primary" onclick="goTo('M07')">Submit Reading (Log Outcome) &gt;</button>
+        </div>
+
+        <!-- M07: Queue & Sync -->
+        <div id="view-m07" hidden>
+          <div style="background:var(--warn-f);border:1px solid var(--warn-s);border-radius:8px;padding:10px 12px;font-size:13px">
+            <b>Offline Mode Active:</b> Plant basement network partition detected. 2 items queued locally in encrypted store.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <div class="card">
+              <div style="display:flex;justify-content:space-between">
+                <b>Flow Reading (11.4 L/min)</b>
+                <span class="status-badge warn">QUEUED</span>
+              </div>
+              <span class="kv">Weld Cell 4 &bull; Logged 09:38</span>
+            </div>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between">
+                <b>Photo: strainer_swab_wc4.jpg</b>
+                <span class="status-badge warn">QUEUED</span>
+              </div>
+              <span class="kv">1.8 MB encrypted payload</span>
+            </div>
+          </div>
+          <button class="btn primary" style="margin-top:14px" onclick="alert('Syncing with Ingest Gateway...')">⟳ Re-Try Sync Now</button>
+        </div>
+
+        <!-- M08: Mobile Notifications -->
+        <div id="view-m08" hidden>
+          <div class="card">
+            <span class="kv">Device Token: <b>Apple APNs / Google FCM</b></span>
+            <h3 style="margin:4px 0">Push Notification Channels</h3>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <b>Safety-Critical Equipment Alerts</b><br>
+                <span class="kv">Tier 1 &amp; Tier 2 alarms</span>
+              </div>
+              <span class="status-badge ok">ALWAYS ON</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <b>Checklist &amp; Approval Requests</b><br>
+                <span class="kv">Assigned work orders</span>
+              </div>
+              <span class="status-badge ok">ENABLED</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <b>Acoustic Shift Bell</b><br>
+                <span class="kv">Chime on arrival</span>
+              </div>
+              <span class="status-badge ok">ENABLED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- M09: Sign In -->
+        <div id="view-m09" hidden>
+          <div style="text-align:center;padding:14px 0">
+            <h3 style="margin:0 0 6px;font-size:1.3rem">AuraPrime FactoryPulse Mobile</h3>
+            <span class="kv">Industrial Advisory &amp; Triage</span>
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Plant Identity SSO</label>
+            <button class="btn primary" style="width:100%" onclick="alert('Authenticating with corporate SAML/OAuth 2.1...')">Sign In with Corporate SSO</button>
+          </div>
+          <div style="text-align:center;font-size:13px;color:var(--muted);margin:8px 0">— or —</div>
+          <button class="btn" style="width:100%">🔑 Use Biometric / Security Key</button>
+          <div class="kv" style="text-align:center;margin-top:14px">
+            Bounded Device Enrollment &bull; FIDO2 Hardware Attestation
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <ul class="notes">
+    <li><b>M05–M09:</b> Covers the complete companion workflow for shop-floor technicians on phone and rugged tablets.</li>
+    <li><b>Offline Store &amp; Forward (M07):</b> Telemetry and checklists are stored locally when network drops in cell basements and replayed in order (Invariant 5).</li>
+    <li><b>One Universal Codebase (ADR-029):</b> Built using Expo React Native for zero duplicate code across platforms.</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  const title = document.getElementById('screen-title');
+  const chip = document.getElementById('screen-chip');
+
+  const views = {
+    M05: document.getElementById('view-m05'),
+    M06: document.getElementById('view-m06'),
+    M07: document.getElementById('view-m07'),
+    M08: document.getElementById('view-m08'),
+    M09: document.getElementById('view-m09')
+  };
+
+  const titles = {
+    M05: "M05 Scan Asset",
+    M06: "M06 Capture Data & Photo",
+    M07: "M07 Offline Queue & Sync",
+    M08: "M08 Notification Rules",
+    M09: "M09 Industrial SSO Sign In"
+  };
+
+  const chips = {
+    M05: "QR / NFC",
+    M06: "INSPECTION",
+    M07: "OFFLINE SAFE",
+    M08: "ALERTS",
+    M09: "OAUTH 2.1"
+  };
+
+  window.goTo = function(scr){
+    document.querySelectorAll('.controls button[data-screen]').forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.screen === scr ? 'true' : 'false');
+    });
+    setScreen(scr);
+  };
+
+  function setScreen(scr){
+    Object.keys(views).forEach(k => views[k].hidden = true);
+    views[scr].hidden = false;
+    title.innerText = titles[scr];
+    chip.innerText = chips[scr];
+  }
+
+  document.querySelectorAll('.controls button[data-screen]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-screen]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      setScreen(btn.dataset.screen);
+    });
+  });
+
+  document.querySelectorAll('.controls button[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.controls button[data-theme]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const theme = btn.dataset.theme;
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

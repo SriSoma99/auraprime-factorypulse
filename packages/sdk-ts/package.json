@@ -1,0 +1,23 @@
+{
+  "name": "@fp/sdk-ts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "openapi-typescript ../../doc/api/openapi.yaml -o src/schema.gen.ts",
+    "lint:contract": "redocly lint ../../doc/api/openapi.yaml --extends=recommended-strict --skip-rule=operation-4xx-response --skip-rule=no-server-example.com",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.57.0",
+    "openapi-typescript": "^7.13.0",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "auraprime-factorypulse",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "local:init": "tsx infra/local/init-local.ts",
+    "local:up": "docker compose -f infra/local/docker-compose.yml --env-file infra/local/.env.local up -d --wait && tsx infra/local/init-topics.ts",
+    "local:down": "docker compose -f infra/local/docker-compose.yml --env-file infra/local/.env.local down",
+    "db:migrate": "pnpm --filter @fp/db run migrate",
+    "db:seed": "pnpm --filter @fp/db run seed",
+    "db:reset": "pnpm --filter @fp/db run reset",
+    "api:types": "pnpm --filter @fp/sdk-ts run generate",
+    "config:docs": "pnpm --filter @fp/config run docs",
+    "dev:api": "pnpm --filter @fp/mock-api run dev",
+    "dev:ingest": "pnpm --filter @fp/ingest-gateway run dev",
+    "dev:stream": "pnpm --filter @fp/stream-processor run dev",
+    "sim": "pnpm --filter @fp/simulator run start",
+    "sim:otlp": "pnpm --filter @fp/simulator run otlp:replay",
+    "dev:app": "pnpm --filter @fp/app run web",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --workspace-concurrency=1 --filter @fp/config --filter @fp/synthetic-data --filter @fp/sdk-ts --filter @fp/db --filter @fp/mock-api --filter @fp/app --filter @fp/ingest-gateway --filter @fp/simulator --filter @fp/stream-processor --filter @fp/intel-core --filter @fp/knowledge-svc --filter @fp/agent-orchestrator --filter @fp/governance-svc --filter @fp/case-svc --filter @fp/api-gateway --filter @fp/mcp-server run test",
+    "test:e2e": "pnpm --filter @fp/app exec playwright test",
+    "validate:cloud": "tsx tools/validate-cloud-budget.ts",
+    "seed:rag": "tsx tools/seed-industrial-rag.ts",
+    "sbom:generate": "tsx tools/generate-sbom.ts",
+    "capture:screens": "tsx tools/capture-all-screens.ts",
+    "export:public": "tsx tools/export-public.ts",
+    "demo:video": "pnpm --dir tools/demo install --ignore-workspace && tsx tools/demo/narrate.ts && pnpm --filter @fp/app exec playwright test -c playwright.demo.config.ts && tsx tools/demo/compose.ts"
+  },
+  "devDependencies": {
+    "@fp/config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "esbuild": "0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
